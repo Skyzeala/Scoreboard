@@ -1,0 +1,71 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "shell",
+			"label": "OPENGL init",
+			"command": "C:\\MinGW\\bin\\g++.exe",
+			"args": [
+				"-c",
+				"-Wall",
+				"scoreboard.cpp",
+				"-IC:\\Program Files\\freeglut\\include",
+				"-o",
+				"scoreboard.o",
+
+				// "-lglu32",
+				
+				// "-lGL",
+				// "-lGLU",
+				// "-lglut"
+				
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+		},
+		{
+			"type": "shell",
+			"label": "OPENGL",
+			"command": "C:\\MinGW\\bin\\g++.exe",
+			"args": [
+				"-g",
+				"-Wall",
+				"scoreboard.o",
+				"-LC:\\Program Files\\freeglut\\lib",
+				"-lfreeglut",
+				"-lopengl32",
+				"-lglu32",
+				"-o",
+				"Scoreboard.exe",
+
+				// "-lglu32",
+				
+				// "-lGL",
+				// "-lGLU",
+				// "-lglut"
+				
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"dependsOn": [
+				"OPENGL init"
+			]
+		}
+	]
+}
