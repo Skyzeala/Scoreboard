@@ -51,13 +51,16 @@ void timeCB(int value);
 void reshapeCanvas(int width, int height);
 
 void * font = GLUT_STROKE_MONO_ROMAN;
+int mousePositionX;
+int mousePositionY;
 vector<Button> buttons;
 
-Color bgColor = Color(0.5,0.8,0.8);
-Color textColor = Color(0.1,0.2,0);
-Color accentColor = Color(0.7,0.7,0.7);
-Color team1Color = Color(0.7,0.1,0);
-Color team2Color = Color(0,0.1,0.7);
+Color bgColor = Color(0.6,0.7,0.9);
+Color textColor = Color(0.0,0.4,0);
+Color accent1Color = Color(0.8,0.8,0.8);
+Color accent2Color = Color(0.2,0.2,0.2);
+Color team1Color = Color(0.8,0.2,0);
+Color team2Color = Color(0,0.2,0.8);
 
 int score1 = 0;
 int score2 = 0;
@@ -67,6 +70,12 @@ int score2 = 0;
 void drawString(float posx, float posy, float size, char * str, FontStyle style);
 void drawButton(float startx, float starty, float endx, float endy, Color &color);
 void drawButton(Button &button);
+
+//button action functions
+void incrementScore1();
+void incrementScore2();
+void decrementScore1();
+void decrementScore2();
 
 //init functions
 void createButtons();
@@ -94,7 +103,7 @@ int main(int argc, char *argv[])
 
     glutDisplayFunc(displayCB);	
     //glutReshapeFunc(reshapeCanvas);
-    //glutMouseFunc(mouseCB);
+    glutMouseFunc(mouseCB);
     //glutKeyboardFunc(keyboardCB);
     glutTimerFunc(1000, timeCB, 0);
     glutPassiveMotionFunc(motionCB);
@@ -115,6 +124,8 @@ void displayCB()
     char timeStr[STRING_MAX];
     char scoreA[STRING_MAX];
     char scoreB[STRING_MAX];
+    char plus[STRING_MAX] = "+";
+    char minus[STRING_MAX] = "-";
     toString(score1, scoreA);
     toString(score2, scoreB);
     timeStruct = *localtime(&currTime);
@@ -123,10 +134,6 @@ void displayCB()
     glClearColor(bgColor.r, bgColor.g, bgColor.b, 1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
-
-    
-    drawButton(0, 0, 100, 100, accentColor);
-    drawButton(100, 100, 200, 200, accentColor);
 
     for (unsigned int i = 0; i < buttons.size(); i++)
     {
@@ -140,15 +147,30 @@ void displayCB()
     drawString(100, 340, 220, scoreA, Heavy);
     drawString(450, 340, 230, scoreB, Heavy);
 
+    drawString(150, 397, 20, minus, Bold);
+    drawString(280, 397, 20, plus, Bold);
+    drawString(505, 397, 20, minus, Bold);
+    drawString(630, 397, 20, plus, Bold);
+
     glutSwapBuffers();
 
 }
 
 //button: left middle or right, state: up or down, mousex and mousey: the cursor position when the state changes
+//coded with help from https://stackoverflow.com/questions/27276075/glut-mouse-button-down
 void mouseCB(int button, int state, int mousex, int mousey) //window relative coordinates
 {
-    
-
+    if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
+    {
+        for (unsigned int i = 0; i < buttons.size(); i++)
+        {
+            if (buttons[i].over(mousex, mousey))
+            {
+                buttons[i].action();
+                break; //in this program buttons will not overlap, so only one can be clicked at a time
+            }
+        }
+    }
 }
 
 void keyboardCB(unsigned char key, int mousex, int mousey) //window relative coordinates
@@ -165,10 +187,8 @@ void timeCB(int value)
 
 void motionCB(int posx, int posy)
 {
-    if (posx > 0 && posx < 100 && posy > 0 && posy < 100)
-        bgColor = Color(0.5,0.5,0.5);
-    else
-        bgColor = Color(1,1,1);
+    mousePositionX = posx;
+    mousePositionY = posy;
     glutPostRedisplay();
 }
 
@@ -192,7 +212,12 @@ void drawButton(Button &button)
 {
     glLoadIdentity();
     glPushMatrix();
-    glColor3f(button.color->r, button.color->g, button.color->b);
+    //change button color when hovered over
+    if (button.over(mousePositionX, mousePositionY) && (button.purpose == Hoverable || button.purpose == Clickable))
+        glColor3f((button.color->r + accent2Color.r)/2.0, (button.color->g + accent2Color.g)/2.0, (button.color->b + accent2Color.b)/2.0);
+    else
+        glColor3f(button.color->r, button.color->g, button.color->b);
+    
     glTranslatef(-1,1,0);
     glScalef(2.0f/(WINDOW_WIDTH), -2.0f/(WINDOW_HEIGHT), 1.0f);
     glBegin(GL_POLYGON);
@@ -259,9 +284,47 @@ void reshapeCanvas(int w, int h)
 
 void createButtons()
 {
-    buttons.push_back(Button(100, 150, 220, 350, &team1Color, Hoverable));
-    buttons.push_back(Button(230, 150, 350, 350, &team1Color, Hoverable));
-    buttons.push_back(Button(450, 150, 570, 350, &team2Color, Hoverable));
-    buttons.push_back(Button(580, 150, 700, 350, &team2Color, Hoverable));
+    //main score display panels
+    buttons.push_back(Button(100, 150, 220, 350, &team1Color, Hoverable, nullptr));
+    buttons.push_back(Button(230, 150, 350, 350, &team1Color, Hoverable, nullptr));
+    buttons.push_back(Button(450, 150, 570, 350, &team2Color, Hoverable, nullptr));
+    buttons.push_back(Button(580, 150, 700, 350, &team2Color, Hoverable, nullptr));
+
+    //add and subtract from score buttons
+    buttons.push_back(Button(100, 370, 220, 410, &accent1Color, Clickable, decrementScore1));
+    buttons.push_back(Button(230, 370, 350, 410, &accent1Color, Clickable, incrementScore1));
+    buttons.push_back(Button(450, 370, 570, 410, &accent1Color, Clickable, decrementScore2));
+    buttons.push_back(Button(580, 370, 700, 410, &accent1Color, Clickable, incrementScore2));
 }
+
+
+
+void incrementScore1()
+{
+    ++score1;
+}
+void incrementScore2()
+{
+    ++score2;
+}
+void decrementScore1()
+{
+    if (score1 > 0)
+        --score1;
+}
+void decrementScore2()
+{
+    if (score2 > 0)
+        --score2;
+}
+
+
+
+
+
+
+
+
+
+
 

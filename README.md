@@ -33,6 +33,8 @@ Thank you to Lighthouse3d for the introductive tutorials to help me check my fra
 I used some of the code from this tutorial:
 http://www.lighthouse3d.com/tutorials/glut-tutorial/preparing-the-window-for-a-reshape/
 
+I also used code from these stackoverflow questions and answers:
+https://stackoverflow.com/questions/27276075/glut-mouse-button-down
 
 
 

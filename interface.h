@@ -3,6 +3,7 @@
 
 #include "utilities.h"
 
+typedef void (*actionFunction)(void);
 
 enum ButtonPurpose
 {
@@ -17,12 +18,13 @@ struct Button
     int leftx, topy, rightx, bottomy;
     Color * color;
     ButtonPurpose purpose;
-    Button(): leftx(0), topy(0), rightx(0), bottomy(0), color(nullptr), purpose(DisplayOnly) {}
-    Button(int leftx, int topy, int rightx, int bottomy, Color * color, ButtonPurpose purpose): 
-        leftx(leftx), topy(topy), rightx(rightx), bottomy(bottomy), color(color), purpose(purpose) {}
+    actionFunction action;
+    Button();
+    Button(int leftx, int topy, int rightx, int bottomy, Color * color, ButtonPurpose purpose, actionFunction action);
+    bool over(int x, int y);
 };
 
-bool onButton(int x, int y, Button &button);
+
 
 
 #endif

@@ -1,9 +1,28 @@
 #include "interface.h"
 
 
-bool onButton(int x, int y, Button &button)
+
+
+
+
+Button::Button(): 
+    leftx(0), topy(0), rightx(0), bottomy(0), color(nullptr), purpose(DisplayOnly) 
 {
-    if (x > button.leftx && y > button.topy && x < button.rightx && y < button.bottomy)
+}
+
+
+
+Button::Button(int leftx, int topy, int rightx, int bottomy, Color * color, ButtonPurpose purpose, actionFunction action): 
+    leftx(leftx), topy(topy), rightx(rightx), bottomy(bottomy), color(color), purpose(purpose), action(action)
+{
+}
+
+
+
+
+bool Button::over(int x, int y)
+{
+    if (x > leftx && y > topy && x < rightx && y < bottomy)
         return true;
     return false;
 }
