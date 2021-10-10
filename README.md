@@ -8,6 +8,7 @@ You can find concept art for the interface design in concept_art.png which shows
 * C++
 * OpenGL
 * freeGLUT
+* ctime
 
 ## Build instructions for Windows 10 using VSCode (unfinished)
 

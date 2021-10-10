@@ -7,7 +7,9 @@ past set scores
 glutPostRedisplay(); //after any visual variable change or sequence of changes
 clear all button
 glutGet(GLUT_SCREEN_WIDTH);
+button types, click for an action, hover, enter user input, do nothing
 for the settings window glutCreateSubWindow(frameWin,FRAME_W,FRAME_H,canW,canH);
+take a look at this https://stackoverflow.com/questions/22545934/glut-initialisation-function
 glutCreateSubWindow(frameWin,FRAME_W, glutGet(GLUT_WINDOW_HEIGHT)-RUL_H, glutGet(GLUT_WINDOW_WIDTH)-FRAME_W, RUL_H);
 for mouseover color changes void glutMotionFunc(void (*func)(int x, int y));
 void glutPassiveMotionFunc(void (*func)(int x, int y));
@@ -17,18 +19,23 @@ glUseProgram makes subsequent draws use a particular shader program
 glut documentation https://www.opengl.org/resources/libraries/glut/spec3/spec3.html
 */
 
+#include "utilities.h"
+#include "interface.h"
 
-//#include <windows.h>
-//#include <stdlib.h>
 #include <iostream>
 #include <ctime>
-#include <vector>
+
 
 #ifdef __APPLE__
 #include <GLUT/glut.h>
 #else
 #include <GL/glut.h>
 #endif
+
+#define GLUT_BUILDING_LIB
+//#define GLUT_DISABLE_ATEXIT_HACK
+
+using namespace std;
 
 #define STRING_MAX 30
 #define GAME_MAX 10
@@ -43,55 +50,11 @@ void keyboardCB(unsigned char key, int mousex, int mousey);
 void timeCB(int value);
 void reshapeCanvas(int width, int height);
 
-enum ProgramState //this will define what is displayed on screen
-{
-    Active, //when the program is simply displaying normally and waiting for changes
-    Settings, //when the settings page has been opened
-    AwaitingInput //when a text box should be displayed
-};
-
-enum FontStyle 
-{
-    Regular,
-    Bold,
-    Heavy,
-    Italic, 
-    BoldItalic,
-    HeavyItalic,
-    //not yet implemented
-    Underline, 
-    Shadow,
-    HeavyShadow
-};
-
-struct Color
-{
-    float r;
-    float g;
-    float b;
-    float a;
-    Color(): r(0), g(0), b(0), a(0) {}
-    Color(float r, float g, float b, float a = 1): r(r), g(g), b(b), a(a) {}
-};
-
 void * font = GLUT_STROKE_MONO_ROMAN;
-Color bgColor = Color(0.5,0.8,0.8);
-Color textColor = Color(0.1,0.2,0);
-Color accentColor = Color(0.7,0.7,0.7);
-Color team1Color = Color(0.7,0.1,0);
-Color team2Color = Color(0,0.1,0.7);
 
-struct Button
-{
-    int leftx, topy, rightx, bottomy;
-    Color * color;
-    Button(): leftx(0), topy(0), rightx(0), bottomy(0), color(&bgColor) {}
-    Button(int leftx, int topy, int rightx, int bottomy, Color * color): 
-        leftx(leftx), topy(topy), rightx(rightx), bottomy(bottomy), color(color) {}
-};
+int score1 = 0;
+int score2 = 0;
 
-Button butt = Button(100,100,100,400, &team1Color);
-std::vector<Button> buttons;
 
 //drawing functions
 void drawString(float posx, float posy, float size, char * str, FontStyle style);
@@ -111,7 +74,7 @@ int main(int argc, char *argv[])
     createButtons();
 
     glutInit(&argc, argv);          //initialize GLUT
-    glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+    glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT); //make a window
     glutInitWindowPosition(400,100);
     glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
 
@@ -131,6 +94,9 @@ int main(int argc, char *argv[])
     
     glutMainLoop();
 
+    if (scoreWindow == 1)
+        timeCB(1);
+
     return 0;
 }
 
@@ -140,8 +106,10 @@ void displayCB()
     time_t currTime = time(0);
     struct tm timeStruct;
     char timeStr[STRING_MAX];
-    char score1[STRING_MAX] = "25";
-    char score2[STRING_MAX] = "09";
+    char scoreA[STRING_MAX];
+    char scoreB[STRING_MAX];
+    toString(score1, scoreA);
+    toString(score2, scoreB);
     timeStruct = *localtime(&currTime);
     strftime(timeStr, STRING_MAX, "%I:%M:%S", &timeStruct);
 
@@ -153,7 +121,7 @@ void displayCB()
     drawButton(0, 0, 100, 100, accentColor);
     drawButton(100, 100, 200, 200, accentColor);
 
-    for (int i = 0; i < buttons.size(); i++)
+    for (unsigned int i = 0; i < buttons.size(); i++)
     {
         drawButton(buttons[i]);
     }
@@ -162,8 +130,8 @@ void displayCB()
 
     glColor3f(textColor.r, textColor.g, textColor.b);
     drawString(270, 80, 60, timeStr, Bold);
-    drawString(100, 340, 220, score1, Heavy);
-    drawString(450, 340, 230, score2, Heavy);
+    drawString(100, 340, 220, scoreA, Heavy);
+    drawString(450, 340, 230, scoreB, Heavy);
 
     glutSwapBuffers();
 
