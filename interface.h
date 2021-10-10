@@ -2,19 +2,27 @@
 #define _INTERFACE_
 
 #include "utilities.h"
-#include <vector>
 
+
+enum ButtonPurpose
+{
+    DisplayOnly,
+    Hoverable,
+    Clickable,
+    Editable
+};
 
 struct Button
 {
     int leftx, topy, rightx, bottomy;
     Color * color;
-    Button(): leftx(0), topy(0), rightx(0), bottomy(0), color(&bgColor) {}
-    Button(int leftx, int topy, int rightx, int bottomy, Color * color): 
-        leftx(leftx), topy(topy), rightx(rightx), bottomy(bottomy), color(color) {}
+    ButtonPurpose purpose;
+    Button(): leftx(0), topy(0), rightx(0), bottomy(0), color(nullptr), purpose(DisplayOnly) {}
+    Button(int leftx, int topy, int rightx, int bottomy, Color * color, ButtonPurpose purpose): 
+        leftx(leftx), topy(topy), rightx(rightx), bottomy(bottomy), color(color), purpose(purpose) {}
 };
 
-Button button = Button(100,100,100,400, &team1Color);
-std::vector<Button> buttons;
+bool onButton(int x, int y, Button &button);
+
 
 #endif

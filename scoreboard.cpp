@@ -24,7 +24,7 @@ glut documentation https://www.opengl.org/resources/libraries/glut/spec3/spec3.h
 
 #include <iostream>
 #include <ctime>
-
+#include <vector>
 
 #ifdef __APPLE__
 #include <GLUT/glut.h>
@@ -51,6 +51,13 @@ void timeCB(int value);
 void reshapeCanvas(int width, int height);
 
 void * font = GLUT_STROKE_MONO_ROMAN;
+vector<Button> buttons;
+
+Color bgColor = Color(0.5,0.8,0.8);
+Color textColor = Color(0.1,0.2,0);
+Color accentColor = Color(0.7,0.7,0.7);
+Color team1Color = Color(0.7,0.1,0);
+Color team2Color = Color(0,0.1,0.7);
 
 int score1 = 0;
 int score2 = 0;
@@ -252,9 +259,9 @@ void reshapeCanvas(int w, int h)
 
 void createButtons()
 {
-    buttons.push_back(Button(100, 150, 220, 350, &team1Color));
-    buttons.push_back(Button(230, 150, 350, 350, &team1Color));
-    buttons.push_back(Button(450, 150, 570, 350, &team2Color));
-    buttons.push_back(Button(580, 150, 700, 350, &team2Color));
+    buttons.push_back(Button(100, 150, 220, 350, &team1Color, Hoverable));
+    buttons.push_back(Button(230, 150, 350, 350, &team1Color, Hoverable));
+    buttons.push_back(Button(450, 150, 570, 350, &team2Color, Hoverable));
+    buttons.push_back(Button(580, 150, 700, 350, &team2Color, Hoverable));
 }
 

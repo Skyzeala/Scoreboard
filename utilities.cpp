@@ -1,3 +1,5 @@
+#include "utilities.h"
+
 
 void toString(int score, char * string)
 {

@@ -34,11 +34,6 @@ struct Color
 
 
 
-Color bgColor = Color(0.5,0.8,0.8);
-Color textColor = Color(0.1,0.2,0);
-Color accentColor = Color(0.7,0.7,0.7);
-Color team1Color = Color(0.7,0.1,0);
-Color team2Color = Color(0,0.1,0.7);
 
 
 void toString(int score, char * string);
