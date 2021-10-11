@@ -33,7 +33,6 @@ glut documentation https://www.opengl.org/resources/libraries/glut/spec3/spec3.h
 #endif
 
 #define GLUT_BUILDING_LIB
-//#define GLUT_DISABLE_ATEXIT_HACK
 
 using namespace std;
 
@@ -53,17 +52,23 @@ void reshapeCanvas(int width, int height);
 void * font = GLUT_STROKE_MONO_ROMAN;
 int mousePositionX;
 int mousePositionY;
+bool mousePressed;
 vector<Button> buttons;
 
 Color bgColor = Color(0.6,0.7,0.9);
 Color textColor = Color(0.0,0.4,0);
-Color accent1Color = Color(0.8,0.8,0.8);
-Color accent2Color = Color(0.2,0.2,0.2);
+Color accentColor = Color(0.8,0.8,0.8);
+Color interactColor = Color(0.2,0.2,0.2);
 Color team1Color = Color(0.8,0.2,0);
 Color team2Color = Color(0,0.2,0.8);
 
+
+char team1Name[STRING_MAX] = "Team 1";
+char team2Name[STRING_MAX] = "Team 2";
+
 int score1 = 0;
 int score2 = 0;
+int setNumber = 1;
 
 
 //drawing functions
@@ -126,8 +131,10 @@ void displayCB()
     char scoreB[STRING_MAX];
     char plus[STRING_MAX] = "+";
     char minus[STRING_MAX] = "-";
+    char set[STRING_MAX];
     toString(score1, scoreA);
     toString(score2, scoreB);
+    toString(setNumber, set);
     timeStruct = *localtime(&currTime);
     strftime(timeStr, STRING_MAX, "%I:%M:%S", &timeStruct);
 
@@ -143,9 +150,11 @@ void displayCB()
     std::cout << timeStr << std::endl;
 
     glColor3f(textColor.r, textColor.g, textColor.b);
-    drawString(270, 80, 60, timeStr, Bold);
+    drawString(275, 80, 60, timeStr, Bold);
     drawString(100, 340, 220, scoreA, Heavy);
     drawString(450, 340, 230, scoreB, Heavy);
+
+    drawString(375, 200, 45, set, Bold);
 
     drawString(150, 397, 20, minus, Bold);
     drawString(280, 397, 20, plus, Bold);
@@ -162,15 +171,19 @@ void mouseCB(int button, int state, int mousex, int mousey) //window relative co
 {
     if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
     {
+        mousePressed = true;
         for (unsigned int i = 0; i < buttons.size(); i++)
         {
-            if (buttons[i].over(mousex, mousey))
+            if (buttons[i].purpose == Clickable && buttons[i].over(mousex, mousey))
             {
                 buttons[i].action();
                 break; //in this program buttons will not overlap, so only one can be clicked at a time
             }
         }
     }
+    else
+        mousePressed = false;
+    glutPostRedisplay();
 }
 
 void keyboardCB(unsigned char key, int mousex, int mousey) //window relative coordinates
@@ -214,7 +227,12 @@ void drawButton(Button &button)
     glPushMatrix();
     //change button color when hovered over
     if (button.over(mousePositionX, mousePositionY) && (button.purpose == Hoverable || button.purpose == Clickable))
-        glColor3f((button.color->r + accent2Color.r)/2.0, (button.color->g + accent2Color.g)/2.0, (button.color->b + accent2Color.b)/2.0);
+    {
+        if (button.purpose == Clickable && mousePressed)
+            glColor3f((button.color->r + interactColor.r)/2.0, (button.color->g + interactColor.g)/2.0, (button.color->b + interactColor.b)/2.0);
+        else
+            glColor3f((button.color->r + interactColor.r/2.0)/1.5, (button.color->g + interactColor.g/2.0)/1.5, (button.color->b + interactColor.b/2.0)/1.5);
+    }
     else
         glColor3f(button.color->r, button.color->g, button.color->b);
     
@@ -291,10 +309,13 @@ void createButtons()
     buttons.push_back(Button(580, 150, 700, 350, &team2Color, Hoverable, nullptr));
 
     //add and subtract from score buttons
-    buttons.push_back(Button(100, 370, 220, 410, &accent1Color, Clickable, decrementScore1));
-    buttons.push_back(Button(230, 370, 350, 410, &accent1Color, Clickable, incrementScore1));
-    buttons.push_back(Button(450, 370, 570, 410, &accent1Color, Clickable, decrementScore2));
-    buttons.push_back(Button(580, 370, 700, 410, &accent1Color, Clickable, incrementScore2));
+    buttons.push_back(Button(100, 370, 220, 410, &accentColor, Clickable, decrementScore1));
+    buttons.push_back(Button(230, 370, 350, 410, &accentColor, Clickable, incrementScore1));
+    buttons.push_back(Button(450, 370, 570, 410, &accentColor, Clickable, decrementScore2));
+    buttons.push_back(Button(580, 370, 700, 410, &accentColor, Clickable, incrementScore2));
+
+    //set display and set options
+    buttons.push_back(Button(370, 150, 430, 210, &accentColor, DisplayOnly, nullptr));
 }
 
 
