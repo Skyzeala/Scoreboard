@@ -52,13 +52,15 @@ void reshapeCanvas(int width, int height);
 void * font = GLUT_STROKE_MONO_ROMAN;
 int mousePositionX;
 int mousePositionY;
+double mouseScaleX;
+double mouseScaleY;
 bool mousePressed;
 vector<Button> buttons;
 
 Color bgColor = Color(0.6,0.7,0.9);
-Color textColor = Color(0.0,0.4,0);
+Color textColor = Color(0.0,0.1,0);
 Color accentColor = Color(0.8,0.8,0.8);
-Color interactColor = Color(0.2,0.2,0.2);
+Color interactColor = Color(0.3,0.3,0.3);
 Color team1Color = Color(0.8,0.2,0);
 Color team2Color = Color(0,0.2,0.8);
 
@@ -92,6 +94,8 @@ float shearMatrix [] = {1,0,0,0, //the matrix for the italics text transform
 
 int main(int argc, char *argv[])
 {
+    mouseScaleX = 1;
+    mouseScaleY = 1;
     createButtons();
 
     glutInit(&argc, argv);          //initialize GLUT
@@ -107,7 +111,7 @@ int main(int argc, char *argv[])
     int scoreWindow = glutCreateWindow("Scoreboard"); //name the new window "Scoreboard"
 
     glutDisplayFunc(displayCB);	
-    //glutReshapeFunc(reshapeCanvas);
+    glutReshapeFunc(reshapeCanvas);
     glutMouseFunc(mouseCB);
     //glutKeyboardFunc(keyboardCB);
     glutTimerFunc(1000, timeCB, 0);
@@ -150,7 +154,7 @@ void displayCB()
     std::cout << timeStr << std::endl;
 
     glColor3f(textColor.r, textColor.g, textColor.b);
-    drawString(275, 80, 60, timeStr, Bold);
+    drawString(275, 60, 50, timeStr, Bold);
     drawString(100, 340, 220, scoreA, Heavy);
     drawString(450, 340, 230, scoreB, Heavy);
 
@@ -174,7 +178,7 @@ void mouseCB(int button, int state, int mousex, int mousey) //window relative co
         mousePressed = true;
         for (unsigned int i = 0; i < buttons.size(); i++)
         {
-            if (buttons[i].purpose == Clickable && buttons[i].over(mousex, mousey))
+            if (buttons[i].purpose == Clickable && buttons[i].over(mousex * mouseScaleX, mousey * mouseScaleY))
             {
                 buttons[i].action();
                 break; //in this program buttons will not overlap, so only one can be clicked at a time
@@ -226,7 +230,7 @@ void drawButton(Button &button)
     glLoadIdentity();
     glPushMatrix();
     //change button color when hovered over
-    if (button.over(mousePositionX, mousePositionY) && (button.purpose == Hoverable || button.purpose == Clickable))
+    if (button.over(mousePositionX * mouseScaleX, mousePositionY * mouseScaleY) && (button.purpose == Hoverable || button.purpose == Clickable))
     {
         if (button.purpose == Clickable && mousePressed)
             glColor3f((button.color->r + interactColor.r)/2.0, (button.color->g + interactColor.g)/2.0, (button.color->b + interactColor.b)/2.0);
@@ -273,29 +277,13 @@ void drawString(float posx, float posy, float size, char * str, FontStyle style)
     }
 }
 
-//this code is from http://www.lighthouse3d.com/tutorials/glut-tutorial/preparing-the-window-for-a-reshape/
+
 void reshapeCanvas(int w, int h)
 {
-    // Prevent a divide by zero, when window is too short
-	// (you cant make a window of zero width).
-	if(h == 0)
-		h = 1;
-	float ratio = 1.0* w / h;
+    mouseScaleX = WINDOW_WIDTH * 1.0 / w;
+    mouseScaleY = WINDOW_HEIGHT * 1.0 / h;
 
-	// Use the Projection Matrix
-	glMatrixMode(GL_PROJECTION);
-
-        // Reset Matrix
-	glLoadIdentity();
-
-	// Set the viewport to be the entire window
-	glViewport(0, 0, w, h);
-
-	// Set the correct perspective.
-	gluPerspective(45,ratio,1,1000);
-
-	// Get Back to the Modelview
-	glMatrixMode(GL_MODELVIEW);
+    glViewport(0, 0, w, h);
 }
 
 
@@ -319,6 +307,19 @@ void createButtons()
 }
 
 
+void drawInputScreen()
+{
+    Color white = Color(1,1,1);
+    drawButton(50,200,750,400,white);
+    glBegin(GL_LINES);
+    for (int i = 0; i < 500; i+=5)
+    {
+        glVertex2f(i, i);
+    }
+    glEnd();
+}
+
+
 
 void incrementScore1()
 {
@@ -337,6 +338,10 @@ void decrementScore2()
 {
     if (score2 > 0)
         --score2;
+}
+void openSetNumberChangeScreen()
+{
+
 }
 
 
