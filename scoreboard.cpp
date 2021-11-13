@@ -32,7 +32,7 @@ glut documentation https://www.opengl.org/resources/libraries/glut/spec3/spec3.h
 using namespace std;
 
 const int STRING_MAX = 30;
-const int GAME_MAX = 10;
+const int GAME_MAX = 20;
 int WINDOW_WIDTH = 800;
 int WINDOW_HEIGHT = 500;
 
@@ -90,6 +90,8 @@ void decrementScore2();
 void stateToEditTeam1();
 void stateToEditTeam2();
 void stateToEditSetNum();
+void discardInput();
+void saveInput();
 
 //init functions
 void createButtons();
@@ -120,7 +122,7 @@ int main(int argc, char *argv[])
     glutDisplayFunc(displayCB);	
     glutReshapeFunc(reshapeCanvas);
     glutMouseFunc(mouseCB);
-    //glutKeyboardFunc(keyboardCB);
+    glutKeyboardFunc(keyboardCB);
     glutTimerFunc(1000, timeCB, 0);
     glutPassiveMotionFunc(motionCB);
     
@@ -162,8 +164,6 @@ void displayHomeScreen()
     timeStruct = *localtime(&currTime);
     strftime(timeStr, STRING_MAX, "%I:%M:%S", &timeStruct);
 
-    glLoadIdentity();
-
     glClearColor(bgColor.r, bgColor.g, bgColor.b, 1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
@@ -179,8 +179,8 @@ void displayHomeScreen()
     drawString(275, 60, 50, timeStr, Bold);
     drawString(110, 132, 25, team1Name, BoldItalic);
     drawString(460, 132, 25, team2Name, BoldItalic);
-    drawString(98, 340, 220, scoreA, Heavy);
-    drawString(448, 340, 220, scoreB, Heavy);
+    drawString(95, 340, 220, scoreA, Heavy);
+    drawString(445, 340, 220, scoreB, Heavy);
 
     drawString(375, 200, 45, set, Bold);
 
@@ -202,42 +202,62 @@ void displaySettings()
 
 void displayTextBox()
 {
+    char underscore[STRING_MAX] = "_";
     char underscores[STRING_MAX] = "_ _ _ _ _ _ _ _ _ _ _ _ _ _ _";
-    
-    glLoadIdentity();
+    char editing[STRING_MAX] = "Editing";
+    char team[STRING_MAX] = "team";
+    char setNumber[STRING_MAX] = "set number";
+    char save[STRING_MAX] = "Save";
+    char discard[STRING_MAX] = "Discard";
     
     glClearColor(bgColor.r, bgColor.g, bgColor.b, 1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    drawButton(20, 100, 780, 200, accentColor);
 
-    glColor3f(accentColor.r, accentColor.g, accentColor.b);
-    
-    /* 
-    glBegin(GL_LINES);
-    for (int i = 0; i < 500; i+=15)
+    glColor3f(textColor.r, textColor.g, textColor.b);
+    drawString(235, 50, 30, editing, Bold);
+    if (programState == EditTeam1)
     {
-        glVertex2f(i - WINDOW_WIDTH, 0);
-        glVertex2f(i, WINDOW_HEIGHT);
+        drawString(375, 50, 30, team, Bold);
+        drawString(465, 50, 30, team1Name, Bold);
     }
-    glEnd();
-    
-    glBegin(GL_POLYGON);
-		glVertex2f(50, 330);
-		glVertex2f(WINDOW_WIDTH - 50, 330);
-        glVertex2f(WINDOW_WIDTH - 50, WINDOW_HEIGHT - 330);
-        glVertex2f(50, WINDOW_HEIGHT - 330);
-	glEnd(); 
-    */
-    
+    else if (programState == EditTeam2)
+    {
+        drawString(375, 50, 30, team, Bold);
+        drawString(465, 50, 30, team2Name, Bold);
+    }
+    else if (programState == EditSetNum)
+        drawString(375, 50, 30, setNumber, Bold);
+
+    //draw box for text to be entered into
+    drawButton(15, 100, 785, 200, accentColor);
+
+    //draw current input
+    glColor3f(textColor.r, textColor.g, textColor.b);
+    drawString(21, 165, 42, inputString, Bold);
+
     //text box underscores
     glColor3f(textColor.r, textColor.g, textColor.b);
-    drawString(25, 190, 21, underscores, Regular);
-    drawString(30, 190, 21, underscores, Regular);
-    drawString(402, 190, 21, underscores, Regular);
-    drawString(407, 190, 21, underscores, Regular);
-    
-    //highlight current
+    drawString(25, 180, 21, underscores, Regular);
+    drawString(31, 180, 21, underscores, Regular);
+    drawString(402, 180, 21, underscores, Regular);
+    drawString(408, 180, 21, underscores, Regular);
+
+    //highlight current index
+    if (programState == EditTeam1)
+        glColor3f(team1Color.r, team1Color.g, team1Color.b);
+    else if (programState == EditTeam2)
+        glColor3f(team2Color.r, team2Color.g, team2Color.b);
+    drawString(25.13*(textBoxIndex + 1), 177, 33, underscore, Bold);
+
+    //draw discard and save buttons
+    for (unsigned int i = 0; i < editScreenButtons.size(); i++)
+    {
+        drawButton(editScreenButtons[i]);
+    }
+    glColor3f(textColor.r, textColor.g, textColor.b);
+    drawString(125, 300, 40, discard, Bold);
+    drawString(540, 300, 40, save, Bold);
 
     glutSwapBuffers();
 }
@@ -249,12 +269,20 @@ void mouseCB(int button, int state, int mousex, int mousey) //window relative co
     if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
     {
         mousePressed = true;
-        for (unsigned int i = 0; i < homeScreenButtons.size(); i++)
+        for (unsigned int i = 0; (programState == HomeScreen) && i < homeScreenButtons.size(); i++)
         {
             if (homeScreenButtons[i].purpose == Clickable && homeScreenButtons[i].over(mousex * mouseScaleX, mousey * mouseScaleY))
             {
                 homeScreenButtons[i].action();
                 break; //in this program buttons will not overlap, so only one can be clicked at a time
+            }
+        }
+        for (unsigned int i = 0; (programState > Settings) && i < editScreenButtons.size(); i++)
+        {
+            if (editScreenButtons[i].purpose == Clickable && editScreenButtons[i].over(mousex * mouseScaleX, mousey * mouseScaleY))
+            {
+                editScreenButtons[i].action();
+                break;
             }
         }
     }
@@ -265,8 +293,38 @@ void mouseCB(int button, int state, int mousex, int mousey) //window relative co
 
 void keyboardCB(unsigned char key, int mousex, int mousey) //window relative coordinates
 {
-    
+    if (programState > Settings)
+    {
+        cout << "checking keys" << endl;
+        if (key == 27) //if escape is pressed
+        {
+            discardInput();
+        }
+        else if (key == 8 || key == 127) //if backspace or delete are pressed
+        {
+            if (!(textBoxIndex == STRING_MAX - 1 && inputString[textBoxIndex] != '\0'))
+                textBoxIndex -= 1;
+            
+            if (textBoxIndex < 0)
+                textBoxIndex = 0;
+              
+            inputString[textBoxIndex] = '\0';
+        }
+        else if (key == 10) //if enter is pressed
+        {
+            saveInput();
+        }
+        else //add key to the input string
+        {
+            inputString[textBoxIndex] = key;
+            ++textBoxIndex;
+        }
+    }
 
+    if (textBoxIndex >= STRING_MAX)
+        textBoxIndex = STRING_MAX - 1;
+
+    glutPostRedisplay();
 }
 
 void timeCB(int value)
@@ -377,6 +435,12 @@ void createButtons()
 
     //set display and set options
     homeScreenButtons.push_back(Button(370, 150, 430, 210, &accentColor, Clickable, stateToEditSetNum));
+
+
+
+    //text editing buttons
+    editScreenButtons.push_back(Button(70, 240, 350, 330, &accentColor, Clickable, discardInput));
+    editScreenButtons.push_back(Button(450, 240, 730, 330, &accentColor, Clickable, saveInput));
 }
 
 
@@ -411,18 +475,40 @@ void stateToEditSetNum()
 {
     programState = EditSetNum;
 }
+void stateToHomeScreen()
+{
+    programState = HomeScreen;
+}
 void saveInput()
 {
     switch(programState)
     {
         case EditTeam1:
+            strcpy(team1Name, inputString);
             break;
         case EditTeam2:
+            strcpy(team2Name, inputString);
             break;
         case EditSetNum:
+            toInt(inputString, setNumber);
+            if (setNumber > GAME_MAX || setNumber < 1)
+                setNumber = 1;
             break;
         default:
+            break;
     }
+    discardInput(); //clean up input messes and set program state back to home
+}
+void discardInput()
+{
+    //clean up from any input
+    for (int i = 0; i < STRING_MAX; ++i)
+    {
+        inputString[i] = '\0';
+    }
+    textBoxIndex = 0;
+    //go back to home state
+    stateToHomeScreen();
 }
 
 

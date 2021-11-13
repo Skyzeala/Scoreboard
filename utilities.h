@@ -35,8 +35,7 @@ struct Color
 
 
 
-
-
 void toString(int score, char * string);
+void toInt(char * string, int &score);
 
 #endif
