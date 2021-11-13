@@ -1,11 +1,13 @@
 #ifndef _UTILITIES_
 #define _UTILITIES_
 
-enum ProgramState //this will define what is displayed on screen
+enum ProgramState 
 {
-    Active, //when the program is simply displaying normally and waiting for changes
-    Settings, //when the settings page has been opened
-    AwaitingInput //when a text box should be displayed
+    HomeScreen,
+    Settings,
+    EditTeam1,
+    EditTeam2,
+    EditSetNum
 };
 
 enum FontStyle 
@@ -27,9 +29,8 @@ struct Color
     float r;
     float g;
     float b;
-    float a;
-    Color(): r(0), g(0), b(0), a(0) {}
-    Color(float r, float g, float b, float a = 1): r(r), g(g), b(b), a(a) {}
+    Color(): r(0), g(0), b(0) {}
+    Color(float r, float g, float b, float a = 1): r(r), g(g), b(b) {}
 };
 
 

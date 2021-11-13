@@ -7,14 +7,9 @@ past set scores
 glutPostRedisplay(); //after any visual variable change or sequence of changes
 clear all button
 glutGet(GLUT_SCREEN_WIDTH);
-button types, click for an action, hover, enter user input, do nothing
+
 for the settings window glutCreateSubWindow(frameWin,FRAME_W,FRAME_H,canW,canH);
 take a look at this https://stackoverflow.com/questions/22545934/glut-initialisation-function
-glutCreateSubWindow(frameWin,FRAME_W, glutGet(GLUT_WINDOW_HEIGHT)-RUL_H, glutGet(GLUT_WINDOW_WIDTH)-FRAME_W, RUL_H);
-for mouseover color changes void glutMotionFunc(void (*func)(int x, int y));
-void glutPassiveMotionFunc(void (*func)(int x, int y));
-glut can render fonts
-glUseProgram makes subsequent draws use a particular shader program
 
 glut documentation https://www.opengl.org/resources/libraries/glut/spec3/spec3.html
 */
@@ -36,10 +31,10 @@ glut documentation https://www.opengl.org/resources/libraries/glut/spec3/spec3.h
 
 using namespace std;
 
-#define STRING_MAX 30
-#define GAME_MAX 10
-#define WINDOW_WIDTH 800
-#define WINDOW_HEIGHT 500
+const int STRING_MAX = 30;
+const int GAME_MAX = 10;
+int WINDOW_WIDTH = 800;
+int WINDOW_HEIGHT = 500;
 
 //OpenGL and GLUT setup functions
 void displayCB();
@@ -55,7 +50,10 @@ int mousePositionY;
 double mouseScaleX;
 double mouseScaleY;
 bool mousePressed;
-vector<Button> buttons;
+vector<Button> homeScreenButtons;
+vector<Button> editScreenButtons;
+
+ProgramState programState = HomeScreen;
 
 Color bgColor = Color(0.6,0.7,0.9);
 Color textColor = Color(0.0,0.1,0);
@@ -65,13 +63,19 @@ Color team1Color = Color(0.8,0.2,0);
 Color team2Color = Color(0,0.2,0.8);
 
 
-char team1Name[STRING_MAX] = "Team 1";
-char team2Name[STRING_MAX] = "Team 2";
+char team1Name[STRING_MAX] = "Home";
+char team2Name[STRING_MAX] = "Guest";
+char inputString[STRING_MAX];
+int textBoxIndex = 0;
 
 int score1 = 0;
 int score2 = 0;
 int setNumber = 1;
 
+//visual program state screens
+void displayHomeScreen();
+void displaySettings();
+void displayTextBox();
 
 //drawing functions
 void drawString(float posx, float posy, float size, char * str, FontStyle style);
@@ -83,6 +87,9 @@ void incrementScore1();
 void incrementScore2();
 void decrementScore1();
 void decrementScore2();
+void stateToEditTeam1();
+void stateToEditTeam2();
+void stateToEditSetNum();
 
 //init functions
 void createButtons();
@@ -128,6 +135,19 @@ int main(int argc, char *argv[])
 
 void displayCB()
 {
+    switch (programState)
+    {
+        case HomeScreen: displayHomeScreen();
+            break;
+        case Settings: displaySettings();
+            break;
+        default:
+            displayTextBox();
+    }
+}
+
+void displayHomeScreen()
+{
     time_t currTime = time(0);
     struct tm timeStruct;
     char timeStr[STRING_MAX];
@@ -142,21 +162,25 @@ void displayCB()
     timeStruct = *localtime(&currTime);
     strftime(timeStr, STRING_MAX, "%I:%M:%S", &timeStruct);
 
+    glLoadIdentity();
+
     glClearColor(bgColor.r, bgColor.g, bgColor.b, 1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
 
-    for (unsigned int i = 0; i < buttons.size(); i++)
+    for (unsigned int i = 0; i < homeScreenButtons.size(); i++)
     {
-        drawButton(buttons[i]);
+        drawButton(homeScreenButtons[i]);
     }
 
     std::cout << timeStr << std::endl;
 
     glColor3f(textColor.r, textColor.g, textColor.b);
     drawString(275, 60, 50, timeStr, Bold);
-    drawString(100, 340, 220, scoreA, Heavy);
-    drawString(450, 340, 230, scoreB, Heavy);
+    drawString(110, 132, 25, team1Name, BoldItalic);
+    drawString(460, 132, 25, team2Name, BoldItalic);
+    drawString(98, 340, 220, scoreA, Heavy);
+    drawString(448, 340, 220, scoreB, Heavy);
 
     drawString(375, 200, 45, set, Bold);
 
@@ -169,6 +193,55 @@ void displayCB()
 
 }
 
+void displaySettings()
+{
+    char str[STRING_MAX] = "not implemented";
+    drawString(50,50, 20, str, Italic);
+}
+
+
+void displayTextBox()
+{
+    char underscores[STRING_MAX] = "_ _ _ _ _ _ _ _ _ _ _ _ _ _ _";
+    
+    glLoadIdentity();
+    
+    glClearColor(bgColor.r, bgColor.g, bgColor.b, 1);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    drawButton(20, 100, 780, 200, accentColor);
+
+    glColor3f(accentColor.r, accentColor.g, accentColor.b);
+    
+    /* 
+    glBegin(GL_LINES);
+    for (int i = 0; i < 500; i+=15)
+    {
+        glVertex2f(i - WINDOW_WIDTH, 0);
+        glVertex2f(i, WINDOW_HEIGHT);
+    }
+    glEnd();
+    
+    glBegin(GL_POLYGON);
+		glVertex2f(50, 330);
+		glVertex2f(WINDOW_WIDTH - 50, 330);
+        glVertex2f(WINDOW_WIDTH - 50, WINDOW_HEIGHT - 330);
+        glVertex2f(50, WINDOW_HEIGHT - 330);
+	glEnd(); 
+    */
+    
+    //text box underscores
+    glColor3f(textColor.r, textColor.g, textColor.b);
+    drawString(25, 190, 21, underscores, Regular);
+    drawString(30, 190, 21, underscores, Regular);
+    drawString(402, 190, 21, underscores, Regular);
+    drawString(407, 190, 21, underscores, Regular);
+    
+    //highlight current
+
+    glutSwapBuffers();
+}
+
 //button: left middle or right, state: up or down, mousex and mousey: the cursor position when the state changes
 //coded with help from https://stackoverflow.com/questions/27276075/glut-mouse-button-down
 void mouseCB(int button, int state, int mousex, int mousey) //window relative coordinates
@@ -176,11 +249,11 @@ void mouseCB(int button, int state, int mousex, int mousey) //window relative co
     if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
     {
         mousePressed = true;
-        for (unsigned int i = 0; i < buttons.size(); i++)
+        for (unsigned int i = 0; i < homeScreenButtons.size(); i++)
         {
-            if (buttons[i].purpose == Clickable && buttons[i].over(mousex * mouseScaleX, mousey * mouseScaleY))
+            if (homeScreenButtons[i].purpose == Clickable && homeScreenButtons[i].over(mousex * mouseScaleX, mousey * mouseScaleY))
             {
-                buttons[i].action();
+                homeScreenButtons[i].action();
                 break; //in this program buttons will not overlap, so only one can be clicked at a time
             }
         }
@@ -251,21 +324,17 @@ void drawButton(Button &button)
     glPopMatrix();
 }
 
-void drawTextBox()
-{
-    
-}
 
 void drawString(float posx, float posy, float size, char * str, FontStyle style)
 {
-    for (int i = 0; i <= style%3; i++)
+    for (double i = 0; i <= style%3; i+=0.2)
     {
-        for (int j = 0; j <= style%3; j++)
+        for (double j = 0; j <= style%3; j+=0.2)
         {
             glPushMatrix();
             
             glTranslatef((posx + i - WINDOW_WIDTH/2.0)/(WINDOW_WIDTH/2.0), (WINDOW_HEIGHT/2.0 - posy - j)/(WINDOW_HEIGHT/2.0), 0.0f);
-            glScalef(size/80000.0f, size/31000.0f, 1.0f);
+            glScalef(size/70000.0f, size/31000.0f, 1.0f);
             if (style >= Italic && style < Underline)
                 glMultMatrixf(shearMatrix);
             for (int i = 0; i < STRING_MAX && str[i] != '\0'; i++) 
@@ -290,33 +359,24 @@ void reshapeCanvas(int w, int h)
 
 void createButtons()
 {
+    //team names buttons
+    homeScreenButtons.push_back(Button(100, 100, 350, 140, &accentColor, Clickable, stateToEditTeam1));
+    homeScreenButtons.push_back(Button(450, 100, 700, 140, &accentColor, Clickable, stateToEditTeam2));
+
     //main score display panels
-    buttons.push_back(Button(100, 150, 220, 350, &team1Color, Hoverable, nullptr));
-    buttons.push_back(Button(230, 150, 350, 350, &team1Color, Hoverable, nullptr));
-    buttons.push_back(Button(450, 150, 570, 350, &team2Color, Hoverable, nullptr));
-    buttons.push_back(Button(580, 150, 700, 350, &team2Color, Hoverable, nullptr));
+    homeScreenButtons.push_back(Button(100, 150, 220, 350, &team1Color, DisplayOnly, nullptr));
+    homeScreenButtons.push_back(Button(230, 150, 350, 350, &team1Color, DisplayOnly, nullptr));
+    homeScreenButtons.push_back(Button(450, 150, 570, 350, &team2Color, DisplayOnly, nullptr));
+    homeScreenButtons.push_back(Button(580, 150, 700, 350, &team2Color, DisplayOnly, nullptr));
 
     //add and subtract from score buttons
-    buttons.push_back(Button(100, 370, 220, 410, &accentColor, Clickable, decrementScore1));
-    buttons.push_back(Button(230, 370, 350, 410, &accentColor, Clickable, incrementScore1));
-    buttons.push_back(Button(450, 370, 570, 410, &accentColor, Clickable, decrementScore2));
-    buttons.push_back(Button(580, 370, 700, 410, &accentColor, Clickable, incrementScore2));
+    homeScreenButtons.push_back(Button(100, 370, 220, 410, &accentColor, Clickable, decrementScore1));
+    homeScreenButtons.push_back(Button(230, 370, 350, 410, &accentColor, Clickable, incrementScore1));
+    homeScreenButtons.push_back(Button(450, 370, 570, 410, &accentColor, Clickable, decrementScore2));
+    homeScreenButtons.push_back(Button(580, 370, 700, 410, &accentColor, Clickable, incrementScore2));
 
     //set display and set options
-    buttons.push_back(Button(370, 150, 430, 210, &accentColor, DisplayOnly, nullptr));
-}
-
-
-void drawInputScreen()
-{
-    Color white = Color(1,1,1);
-    drawButton(50,200,750,400,white);
-    glBegin(GL_LINES);
-    for (int i = 0; i < 500; i+=5)
-    {
-        glVertex2f(i, i);
-    }
-    glEnd();
+    homeScreenButtons.push_back(Button(370, 150, 430, 210, &accentColor, Clickable, stateToEditSetNum));
 }
 
 
@@ -339,13 +399,31 @@ void decrementScore2()
     if (score2 > 0)
         --score2;
 }
-void openSetNumberChangeScreen()
+void stateToEditTeam1()
 {
-
+    programState = EditTeam1;
 }
-
-
-
+void stateToEditTeam2()
+{
+    programState = EditTeam2;
+}
+void stateToEditSetNum()
+{
+    programState = EditSetNum;
+}
+void saveInput()
+{
+    switch(programState)
+    {
+        case EditTeam1:
+            break;
+        case EditTeam2:
+            break;
+        case EditSetNum:
+            break;
+        default:
+    }
+}
 
 
 
