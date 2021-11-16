@@ -310,7 +310,7 @@ void keyboardCB(unsigned char key, int mousex, int mousey) //window relative coo
               
             inputString[textBoxIndex] = '\0';
         }
-        else if (key == 10) //if enter is pressed
+        else if (key == 13) //if enter is pressed
         {
             saveInput();
         }
