@@ -1,4 +1,3 @@
-#pragma once
 #ifndef _SBUTILITIES_
 #define _SBUTILITIES_
 
@@ -44,5 +43,6 @@ const float shearMatrix [] = {1,0,0,0, //the matrix for the italics text transfo
 
 void toString(int score, char * string);
 void toInt(char * string, int &score);
+char * strcpy(char * dest, char * src);
 
 #endif

@@ -1,5 +1,7 @@
-#include "utilities.h"
+#ifndef _SBSETDATA_
+#define _SBSETDATA_
 
+#include "utilities.h"
 
 class Set
 {
@@ -17,6 +19,13 @@ public:
 
 
 private:
+    int setNumber;
+    int score1;
+    int score2;
+
+    char team1Name[STRING_MAX + 1] = "Home";
+    char team2Name[STRING_MAX + 1] = "Guest";
+
     Color bgColor = Color(0.6,0.7,0.9);
     Color textColor = Color(0.0,0.1,0);
     Color accentColor = Color(0.8,0.8,0.8);
@@ -24,12 +33,7 @@ private:
     Color team1Color = Color(0.8,0.2,0);
     Color team2Color = Color(0,0.2,0.8);
 
-    char team1Name[STRING_MAX + 1] = "Home";
-    char team2Name[STRING_MAX + 1] = "Guest";
-
-    int setNumber;
-    int score1;
-    int score2;
-
 
 };
+
+#endif

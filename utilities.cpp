@@ -25,3 +25,12 @@ void toInt(char * string, int &score)
         score += i;
     }
 }
+
+char * strcpy(char * dest, char * src) //super basic, and now we dont need all of string.h
+{
+    for (int i = 0; i <= STRING_MAX; i++)
+    {
+        dest[i] = src[i];
+    }
+    return dest;
+}

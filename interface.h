@@ -1,4 +1,3 @@
-#pragma once
 #ifndef _SBINTERFACE_
 #define _SBINTERFACE_
 

@@ -23,10 +23,9 @@ make buttons sizes depend on initial screen size
 
 */
 
-//#include "utilities.h"
+#include "utilities.h"
 #include "interface.h"
 
-#include <iostream>
 #include <ctime>
 #include <vector>
 
@@ -461,7 +460,7 @@ void createButtons()
 }
 
 
-
+//
 void incrementScore1() //limited to 99 in toString
 {
     ++score1;
@@ -485,6 +484,8 @@ void resetScore()
     score1 = 0;
     score2 = 0;
 }
+//
+
 void stateToEditTeam1()
 {
     programState = EditTeam1;
