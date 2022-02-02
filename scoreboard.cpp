@@ -14,7 +14,16 @@ take a look at this https://stackoverflow.com/questions/22545934/glut-initialisa
 glut documentation https://www.opengl.org/resources/libraries/glut/spec3/spec3.html
 */
 
-#include "utilities.h"
+/*
+TODO:
+find string memory bounds issue
+store multiple game scores
+change team colors
+make buttons sizes depend on initial screen size
+
+*/
+
+//#include "utilities.h"
 #include "interface.h"
 
 #include <iostream>
@@ -63,9 +72,9 @@ Color team1Color = Color(0.8,0.2,0);
 Color team2Color = Color(0,0.2,0.8);
 
 
-char team1Name[STRING_MAX] = "Home";
-char team2Name[STRING_MAX] = "Guest";
-char inputString[STRING_MAX];
+char team1Name[STRING_MAX + 1] = "Home";
+char team2Name[STRING_MAX + 1] = "Guest";
+char inputString[STRING_MAX + 1];
 int textBoxIndex = 0;
 
 int score1 = 0;
@@ -87,11 +96,15 @@ void incrementScore1();
 void incrementScore2();
 void decrementScore1();
 void decrementScore2();
+void resetScore();
 void stateToEditTeam1();
 void stateToEditTeam2();
 void stateToEditSetNum();
 void discardInput();
 void saveInput();
+void saveSet();
+void discardSet();
+void resetSets();
 
 //init functions
 void createButtons();
@@ -158,6 +171,8 @@ void displayHomeScreen()
     char plus[STRING_MAX] = "+";
     char minus[STRING_MAX] = "-";
     char set[STRING_MAX];
+    char saveSet[STRING_MAX] = "Save";
+    char discardSet[STRING_MAX] = "Discard";
     toString(score1, scoreA);
     toString(score2, scoreB);
     toString(setNumber, set);
@@ -173,21 +188,21 @@ void displayHomeScreen()
         drawButton(homeScreenButtons[i]);
     }
 
-    std::cout << timeStr << std::endl;
-
     glColor3f(textColor.r, textColor.g, textColor.b);
-    drawString(275, 60, 50, timeStr, Bold);
+    drawString(280, 60, 50, timeStr, Bold);
     drawString(110, 132, 25, team1Name, BoldItalic);
     drawString(460, 132, 25, team2Name, BoldItalic);
-    drawString(95, 340, 220, scoreA, Heavy);
-    drawString(445, 340, 220, scoreB, Heavy);
+    drawString(95, 340, 215, scoreA, Heavy);
+    drawString(445, 340, 215, scoreB, Heavy);
 
-    drawString(375, 200, 45, set, Bold);
+    drawString(368, 215, 55, set, Bold);
+    drawString(372, 275, 25, saveSet, Regular);
+    drawString(364, 332, 17, discardSet, Regular);
 
-    drawString(150, 397, 20, minus, Bold);
-    drawString(280, 397, 20, plus, Bold);
-    drawString(505, 397, 20, minus, Bold);
-    drawString(630, 397, 20, plus, Bold);
+    drawString(153, 387, 22, minus, Bold);
+    drawString(281, 387, 22, plus, Bold);
+    drawString(504, 387, 22, minus, Bold);
+    drawString(632, 387, 22, plus, Bold);
 
     glutSwapBuffers();
 
@@ -296,11 +311,11 @@ void keyboardCB(unsigned char key, int mousex, int mousey) //window relative coo
     if (programState > Settings)
     {
         cout << "checking keys" << endl;
-        if (key == 27) //if escape is pressed
+        if (key == 27) //if escape is pressed, act like cancel
         {
             discardInput();
         }
-        else if (key == 8 || key == 127) //if backspace or delete are pressed
+        else if (key == 8 || key == 127) //if backspace or delete are pressed, remove the last character from the string
         {
             if (!(textBoxIndex == STRING_MAX - 1 && inputString[textBoxIndex] != '\0'))
                 textBoxIndex -= 1;
@@ -310,18 +325,18 @@ void keyboardCB(unsigned char key, int mousex, int mousey) //window relative coo
               
             inputString[textBoxIndex] = '\0';
         }
-        else if (key == 13) //if enter is pressed
+        else if (key == 13) //if enter is pressed, act like save
         {
             saveInput();
         }
-        else //add key to the input string
+        else //add key to the input string when input is a normal character
         {
             inputString[textBoxIndex] = key;
             ++textBoxIndex;
         }
     }
 
-    if (textBoxIndex >= STRING_MAX)
+    if (textBoxIndex >= STRING_MAX) //ensures the string is always null terminated and never overflowed
         textBoxIndex = STRING_MAX - 1;
 
     glutPostRedisplay();
@@ -428,14 +443,15 @@ void createButtons()
     homeScreenButtons.push_back(Button(580, 150, 700, 350, &team2Color, DisplayOnly, nullptr));
 
     //add and subtract from score buttons
-    homeScreenButtons.push_back(Button(100, 370, 220, 410, &accentColor, Clickable, decrementScore1));
-    homeScreenButtons.push_back(Button(230, 370, 350, 410, &accentColor, Clickable, incrementScore1));
-    homeScreenButtons.push_back(Button(450, 370, 570, 410, &accentColor, Clickable, decrementScore2));
-    homeScreenButtons.push_back(Button(580, 370, 700, 410, &accentColor, Clickable, incrementScore2));
+    homeScreenButtons.push_back(Button(100, 360, 220, 400, &accentColor, Clickable, decrementScore1));
+    homeScreenButtons.push_back(Button(230, 360, 350, 400, &accentColor, Clickable, incrementScore1));
+    homeScreenButtons.push_back(Button(450, 360, 570, 400, &accentColor, Clickable, decrementScore2));
+    homeScreenButtons.push_back(Button(580, 360, 700, 400, &accentColor, Clickable, incrementScore2));
 
     //set display and set options
-    homeScreenButtons.push_back(Button(370, 150, 430, 210, &accentColor, Clickable, stateToEditSetNum));
-
+    homeScreenButtons.push_back(Button(360, 150, 440, 230, &accentColor, Clickable, stateToEditSetNum));
+    homeScreenButtons.push_back(Button(360, 240, 440, 290, &accentColor, Clickable, nullptr));
+    homeScreenButtons.push_back(Button(360, 300, 440, 350, &accentColor, Clickable, nullptr));
 
 
     //text editing buttons
@@ -445,7 +461,7 @@ void createButtons()
 
 
 
-void incrementScore1()
+void incrementScore1() //limited to 99 in toString
 {
     ++score1;
 }
@@ -462,6 +478,11 @@ void decrementScore2()
 {
     if (score2 > 0)
         --score2;
+}
+void resetScore()
+{
+    score1 = 0;
+    score2 = 0;
 }
 void stateToEditTeam1()
 {
@@ -502,7 +523,7 @@ void saveInput()
 void discardInput()
 {
     //clean up from any input
-    for (int i = 0; i < STRING_MAX; ++i)
+    for (int i = 0; i < STRING_MAX + 1; ++i)
     {
         inputString[i] = '\0';
     }
@@ -510,7 +531,24 @@ void discardInput()
     //go back to home state
     stateToHomeScreen();
 }
+void saveSet()
+{
+    //todo
+    //put score1, score2, and timer time into an object in a list at index set - 1
+    //maybe also store team colors and names
 
+}
+void loadSet()
+{
+    //todo
+    //extract scores and timer (maybe also colors) and display them as if it were current
+}
+void discardSet()
+{
+    //todo
+    //check if current index (set number) is occupied and remove it
+    resetScore();
+} 
 
 
 

@@ -1,5 +1,6 @@
-#ifndef _INTERFACE_
-#define _INTERFACE_
+#pragma once
+#ifndef _SBINTERFACE_
+#define _SBINTERFACE_
 
 #include "utilities.h"
 
