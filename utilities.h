@@ -37,6 +37,11 @@ struct Color
 const int STRING_MAX = 30; //maximum characters to be stored and displayed, add 1 to arrays
 const int GAME_MAX = 20; //maximum number of sets to store
 
+const float shearMatrix [] = {1,0,0,0, //the matrix for the italics text transform
+                        0.5,1,0,0,
+                        0,0,1,0,
+                        0,0,0,1};
+
 void toString(int score, char * string);
 void toInt(char * string, int &score);
 

@@ -40,7 +40,7 @@ make buttons sizes depend on initial screen size
 
 using namespace std;
 
-
+//initial window dimensions
 int WINDOW_WIDTH = 800;
 int WINDOW_HEIGHT = 500;
 
@@ -63,6 +63,7 @@ vector<Button> editScreenButtons;
 
 ProgramState programState = HomeScreen;
 
+//
 Color bgColor = Color(0.6,0.7,0.9);
 Color textColor = Color(0.0,0.1,0);
 Color accentColor = Color(0.8,0.8,0.8);
@@ -70,15 +71,18 @@ Color interactColor = Color(0.3,0.3,0.3);
 Color team1Color = Color(0.8,0.2,0);
 Color team2Color = Color(0,0.2,0.8);
 
-
 char team1Name[STRING_MAX + 1] = "Home";
 char team2Name[STRING_MAX + 1] = "Guest";
+//
+
 char inputString[STRING_MAX + 1];
 int textBoxIndex = 0;
 
+//
 int score1 = 0;
 int score2 = 0;
 int setNumber = 1;
+//
 
 //visual program state screens
 void displayHomeScreen();
@@ -91,11 +95,14 @@ void drawButton(float startx, float starty, float endx, float endy, Color &color
 void drawButton(Button &button);
 
 //button action functions
+//
 void incrementScore1();
 void incrementScore2();
 void decrementScore1();
 void decrementScore2();
 void resetScore();
+//
+
 void stateToEditTeam1();
 void stateToEditTeam2();
 void stateToEditSetNum();
@@ -108,10 +115,6 @@ void resetSets();
 //init functions
 void createButtons();
 
-float shearMatrix [] = {1,0,0,0, //the matrix for the italics text transform
-                        0.5,1,0,0,
-                        0,0,1,0,
-                        0,0,0,1};
 
 int main(int argc, char *argv[])
 {
@@ -189,8 +192,8 @@ void displayHomeScreen()
 
     glColor3f(textColor.r, textColor.g, textColor.b);
     drawString(280, 60, 50, timeStr, Bold);
-    drawString(110, 132, 25, team1Name, BoldItalic);
-    drawString(460, 132, 25, team2Name, BoldItalic);
+    drawString(105, 132, 25, team1Name, BoldItalic);
+    drawString(455, 132, 25, team2Name, BoldItalic);
     drawString(95, 340, 215, scoreA, Heavy);
     drawString(445, 340, 215, scoreB, Heavy);
 
@@ -309,7 +312,6 @@ void keyboardCB(unsigned char key, int mousex, int mousey) //window relative coo
 {
     if (programState > Settings)
     {
-        cout << "checking keys" << endl;
         if (key == 27) //if escape is pressed, act like cancel
         {
             discardInput();
