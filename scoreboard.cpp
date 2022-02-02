@@ -40,8 +40,7 @@ make buttons sizes depend on initial screen size
 
 using namespace std;
 
-const int STRING_MAX = 30;
-const int GAME_MAX = 20;
+
 int WINDOW_WIDTH = 800;
 int WINDOW_HEIGHT = 500;
 
@@ -450,8 +449,8 @@ void createButtons()
 
     //set display and set options
     homeScreenButtons.push_back(Button(360, 150, 440, 230, &accentColor, Clickable, stateToEditSetNum));
-    homeScreenButtons.push_back(Button(360, 240, 440, 290, &accentColor, Clickable, nullptr));
-    homeScreenButtons.push_back(Button(360, 300, 440, 350, &accentColor, Clickable, nullptr));
+    homeScreenButtons.push_back(Button(360, 240, 440, 290, &accentColor, Clickable, saveSet));
+    homeScreenButtons.push_back(Button(360, 300, 440, 350, &accentColor, Clickable, discardSet));
 
 
     //text editing buttons
