@@ -3,12 +3,14 @@
 
 #include "utilities.h"
 
+//currently unused, all pieces scattered around scoreboard.cpp
+
 class Set
 {
 public:
     Set();
-    Set(Set &set);
-    ~Set();
+    Set(Set &set); //start new set based on previous set data like team name, colors, but reset the score 
+    ~Set(); //no dynamic memory, so just a default deconstructor
 
     void incrementScore1(); //limited to 99 in toString
     void incrementScore2();
@@ -23,8 +25,8 @@ private:
     int score1;
     int score2;
 
-    char team1Name[STRING_MAX + 1] = "Home";
-    char team2Name[STRING_MAX + 1] = "Guest";
+    char team1Name[STRING_MAX + 1];
+    char team2Name[STRING_MAX + 1];
 
     Color bgColor = Color(0.6,0.7,0.9);
     Color textColor = Color(0.0,0.1,0);

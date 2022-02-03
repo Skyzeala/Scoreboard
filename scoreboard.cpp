@@ -16,11 +16,27 @@ glut documentation https://www.opengl.org/resources/libraries/glut/spec3/spec3.h
 
 /*
 TODO:
-find string memory bounds issue
 store multiple game scores
 change team colors
-make buttons sizes depend on initial screen size
+make buttons positions depend on initial screen size or set positions, make it easier to move them in bulk
 
+*/
+
+
+
+
+/*
+how set storage and navigation might work
+resetScore sets both score values to 0, but does not change anything else about the set
+discardSet removes the set from the list and the displayed set changes to the next lowest populated item in the list
+    if no sets exist, create a new default set at set value 1 (index 0) and displays it
+resetSets wipes all sets data and creates a default set at value 1 and displays it
+saveSet pauses the timer, creates a new set with the same team names and colors at the next index if available, and displays the new set
+loadSet loads the colors, team names, and score data of a selected set
+
+need to do:
+clarify the discard set button so that users are not easily confused about the function or purpose of it
+make function names alight with button labels to avoid confusion for other programmers
 */
 
 #include "utilities.h"
@@ -108,6 +124,7 @@ void stateToEditSetNum();
 void discardInput();
 void saveInput();
 void saveSet();
+void loadSet();
 void discardSet();
 void resetSets();
 
