@@ -18,10 +18,10 @@ enum FontStyle
     Italic, 
     BoldItalic,
     HeavyItalic,
-    //not yet implemented
+    //below are not yet implemented
     Underline, 
-    Shadow,
-    HeavyShadow
+    BoldUnderline,
+    HeavyUnderline
 };
 
 struct Color
@@ -29,8 +29,10 @@ struct Color
     float r;
     float g;
     float b;
-    Color(): r(0), g(0), b(0) {}
-    Color(float r, float g, float b, float a = 1): r(r), g(g), b(b) {}
+    Color();
+    Color(float r, float g, float b, float a = 1);
+    ~Color();
+    Color & operator=(const Color &color);
 };
 
 const int STRING_MAX = 30; //maximum characters to be stored and displayed, add 1 to arrays

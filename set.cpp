@@ -34,7 +34,25 @@ Set::~Set()
 {
 }
 
+Set & Set::operator=(const Set &set)
+{
+    if (this == &set)
+        return *this;
+    setNumber = set.setNumber;
+    score1 = set.score1;
+    score2 = set.score2;
 
+    strcpy(team1Name, set.team1Name);
+    strcpy(team2Name, set.team2Name);
+
+    bgColor = set.bgColor;
+    textColor = set.textColor;
+    accentColor = set.accentColor;
+    interactColor = set.interactColor;
+    team1Color = set.team1Color;
+    team2Color = set.team2Color;
+    return *this;
+}
 
 
 void Set::incrementScore1()
@@ -183,27 +201,27 @@ Color & Set::getTeam2Color()
     return team2Color;
 }
 
-void Set::setBgColor()//oops, need color arg
+void Set::setBgColor(Color &color)//oops, need color arg
 {
-
+    bgColor = color;
 }
-void Set::setTextColor()
+void Set::setTextColor(Color &color)
 {
-
+    textColor = color;
 }
-void Set::setAccentColor()
+void Set::setAccentColor(Color &color)
 {
-
+    accentColor = color;
 }
-void Set::setInteractColor()
+void Set::setInteractColor(Color &color)
 {
-
+    interactColor = color;
 } 
-void Set::setTeam1Color()
+void Set::setTeam1Color(Color &color)
 {
-
+    team1Color = color;
 }
-void Set::setTeam2Color()
+void Set::setTeam2Color(Color &color)
 {
-
+    team2Color = color;
 }

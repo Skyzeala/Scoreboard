@@ -16,6 +16,7 @@ public:
     Set();
     Set(Set &set); //start new set based on previous set data like team name, colors, but reset the score 
     ~Set(); //no dynamic memory, so just a default deconstructor
+    Set & operator=(const Set &set);
 
     void incrementScore1(); //limited to 99 in toString
     void incrementScore2();
@@ -47,12 +48,12 @@ public:
     Color & getTeam1Color();
     Color & getTeam2Color();
 
-    void setBgColor();
-    void setTextColor();
-    void setAccentColor();
-    void setInteractColor(); 
-    void setTeam1Color();
-    void setTeam2Color();
+    void setBgColor(Color &color);
+    void setTextColor(Color &color);
+    void setAccentColor(Color &color);
+    void setInteractColor(Color &color); 
+    void setTeam1Color(Color &color);
+    void setTeam2Color(Color &color);
 
 private:
     int setNumber;

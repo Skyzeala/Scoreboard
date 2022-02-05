@@ -36,3 +36,31 @@ char * strcpy(char * dest, char * src) //super basic, and now we dont need all o
     }
     return dest;
 }
+
+Color::Color() : 
+    r(0), 
+    g(0), 
+    b(0) 
+{
+}
+
+Color::Color(float r, float g, float b, float a) : 
+    r(r), 
+    g(g), 
+    b(b) 
+{
+}
+
+Color::~Color()
+{
+}
+
+Color & Color::operator=(const Color &color)
+{
+    if (this == &color)
+        return *this;
+    r = color.r; 
+    g = color.g; 
+    b = color.b; 
+    return *this;
+}
