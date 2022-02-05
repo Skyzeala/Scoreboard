@@ -18,7 +18,36 @@ public:
     void decrementScore2();
     void resetScore();
 
+    int getSetNumber();
+    int getScore1();
+    int getScore2();
 
+    void getTeam1Name(char * name);
+    void getTeam2Name(char * name);
+
+    void useBgColor();
+    void useTextColor();
+    void useAccentColor();
+    void useHoverColor(int team); //calculates color and changes to it for the next draws
+    void useClickColor(int team); //calculates color and changes to it for the next draws
+    void useTeam1Color();
+    void useTeam2Color();
+
+    Color & getBgColor();
+    Color & getTextColor();
+    Color & getAccentColor();
+    Color & getInteractColor();
+    Color & getHoverColor(int team); //calculates color and returns it
+    Color & getClickColor(int team); //calculates color and returns it
+    Color & getTeam1Color();
+    Color & getTeam2Color();
+
+    void setBgColor();
+    void setTextColor();
+    void setAccentColor();
+    void setInteractColor(); 
+    void setTeam1Color();
+    void setTeam2Color();
 
 private:
     int setNumber;
@@ -28,13 +57,12 @@ private:
     char team1Name[STRING_MAX + 1];
     char team2Name[STRING_MAX + 1];
 
-    Color bgColor = Color(0.6,0.7,0.9);
-    Color textColor = Color(0.0,0.1,0);
-    Color accentColor = Color(0.8,0.8,0.8);
-    Color interactColor = Color(0.3,0.3,0.3);
-    Color team1Color = Color(0.8,0.2,0);
-    Color team2Color = Color(0,0.2,0.8);
-
+    Color bgColor;
+    Color textColor;
+    Color accentColor;
+    Color interactColor;
+    Color team1Color;
+    Color team2Color;
 
 };
 
