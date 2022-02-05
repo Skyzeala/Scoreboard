@@ -37,8 +37,6 @@ Set::~Set()
 
 
 
-
-
 void Set::incrementScore1()
 {
     if (score1 < 99)
@@ -67,3 +65,145 @@ void Set::resetScore()
 
 
 
+void Set::useBgColor()
+{
+    glColor3f(bgColor.r, bgColor.g, bgColor.b);
+}
+void Set::useTextColor()
+{
+    glColor3f(textColor.r, textColor.g, textColor.b);
+}
+void Set::useAccentColor()
+{
+    glColor3f(accentColor.r, accentColor.g, accentColor.b);
+}
+void Set::useHoverColor(int team)
+{
+    if (team == 1)
+        glColor3f((team1Color.r + interactColor.r)/2.0, (team1Color.g + interactColor.g)/2.0, (team1Color.b + interactColor.b)/2.0);
+    else
+        glColor3f((team2Color.r + interactColor.r)/2.0, (team2Color.g + interactColor.g)/2.0, (team2Color.b + interactColor.b)/2.0);
+}
+void Set::useClickColor(int team)
+{
+    if (team == 1)
+        glColor3f((team1Color.r + interactColor.r*2)/3.0, (team1Color.g + interactColor.g*2)/3.0, (team1Color.b + interactColor.b*2)/3.0);
+    else
+        glColor3f((team2Color.r + interactColor.r*2)/3.0, (team2Color.g + interactColor.g*2)/3.0, (team2Color.b + interactColor.b*2)/3.0);
+}
+void Set::useTeam1Color()
+{
+    glColor3f(team1Color.r, team1Color.g, team1Color.b);
+}
+void Set::useTeam2Color()
+{
+    glColor3f(team2Color.r, team2Color.g, team2Color.b);
+}
+
+
+
+int Set::getSetNumber()
+{
+    return setNumber;
+}
+int Set::getScore1()
+{
+    return score1;
+}
+int Set::getScore2()
+{
+    return score2;
+}
+
+void Set::getTeam1Name(char * name)
+{
+    strcpy(name, team1Name);
+}
+void Set::getTeam2Name(char * name)
+{
+    strcpy(name, team2Name);
+}
+
+Color & Set::getBgColor()
+{
+    return bgColor;
+}
+Color & Set::getTextColor()
+{
+    return textColor;
+}
+Color & Set::getAccentColor()
+{
+    return accentColor;
+}
+Color & Set::getInteractColor()
+{
+    return interactColor;
+}
+Color & Set::getHoverColor(int team)
+{
+    Color color;
+    if (team == 1)
+    {
+        color.r = (team1Color.r + interactColor.r)/2.0;
+        color.g = (team1Color.g + interactColor.g)/2.0;
+        color.b = (team1Color.b + interactColor.b)/2.0;
+    }
+    else
+    {
+        color.r = (team2Color.r + interactColor.r)/2.0;
+        color.g = (team2Color.g + interactColor.g)/2.0;
+        color.b = (team2Color.b + interactColor.b)/2.0;
+    }
+    return color;
+}
+Color & Set::getClickColor(int team)
+{
+    Color color;
+    if (team == 1)
+    {
+        color.r = (team1Color.r + interactColor.r*2)/3.0;
+        color.g = (team1Color.g + interactColor.g*2)/3.0;
+        color.b = (team1Color.b + interactColor.b*2)/3.0;
+    }
+    else
+    {
+        color.r = (team2Color.r + interactColor.r*2)/3.0;
+        color.g = (team2Color.g + interactColor.g*2)/3.0;
+        color.b = (team2Color.b + interactColor.b*2)/3.0;
+    }
+    return color;
+}
+Color & Set::getTeam1Color()
+{
+    return team1Color;
+}
+Color & Set::getTeam2Color()
+{
+    return team2Color;
+}
+
+void Set::setBgColor()//oops, need color arg
+{
+
+}
+void Set::setTextColor()
+{
+
+}
+void Set::setAccentColor()
+{
+
+}
+void Set::setInteractColor()
+{
+
+} 
+void Set::setTeam1Color()
+{
+
+}
+void Set::setTeam2Color()
+{
+
+}

@@ -2,6 +2,11 @@
 #define _SBSETDATA_
 
 #include "utilities.h"
+#ifdef __APPLE__
+#include <GLUT/glut.h>
+#else
+#include <GL/glut.h>
+#endif
 
 //currently unused, all pieces scattered around scoreboard.cpp
 
@@ -18,13 +23,6 @@ public:
     void decrementScore2();
     void resetScore();
 
-    int getSetNumber();
-    int getScore1();
-    int getScore2();
-
-    void getTeam1Name(char * name);
-    void getTeam2Name(char * name);
-
     void useBgColor();
     void useTextColor();
     void useAccentColor();
@@ -32,6 +30,13 @@ public:
     void useClickColor(int team); //calculates color and changes to it for the next draws
     void useTeam1Color();
     void useTeam2Color();
+
+    int getSetNumber();
+    int getScore1();
+    int getScore2();
+
+    void getTeam1Name(char * name);
+    void getTeam2Name(char * name);
 
     Color & getBgColor();
     Color & getTextColor();
