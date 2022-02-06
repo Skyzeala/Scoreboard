@@ -14,7 +14,8 @@ class Set
 {
 public:
     Set();
-    Set(Set &set); //start new set based on previous set data like team name, colors, but reset the score 
+    Set(Set &set);
+    Set(Set &set, int setNum); //create new set for the same teams, reset the score 
     ~Set(); //no dynamic memory, so just a default deconstructor
     Set & operator=(const Set &set);
 
@@ -27,8 +28,8 @@ public:
     void useBgColor();
     void useTextColor();
     void useAccentColor();
-    void useHoverColor(int team); //calculates color and changes to it for the next draws
-    void useClickColor(int team); //calculates color and changes to it for the next draws
+    void useHoverColor(Color &color); //calculates color and changes to it for the next draws
+    void useClickColor(Color &color); //calculates color and changes to it for the next draws
     void useTeam1Color();
     void useTeam2Color();
 
@@ -43,10 +44,17 @@ public:
     Color & getTextColor();
     Color & getAccentColor();
     Color & getInteractColor();
-    Color & getHoverColor(int team); //calculates color and returns it
-    Color & getClickColor(int team); //calculates color and returns it
+    Color & getHoverColor(Color &color); //calculates color and returns it
+    Color & getClickColor(Color &color); //calculates color and returns it
     Color & getTeam1Color();
     Color & getTeam2Color();
+
+    void setSetNumber(int setNum);
+    void setScore1(int score);
+    void setScore2(int score);
+
+    void setTeam1Name(char * name);
+    void setTeam2Name(char * name);
 
     void setBgColor(Color &color);
     void setTextColor(Color &color);

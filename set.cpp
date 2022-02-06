@@ -14,9 +14,22 @@ Set::Set() :
     team2Color(Color(0,0.2,0.8))
 {
 }
-
 Set::Set(Set &set) :
-    setNumber(setNumber+1), 
+    setNumber(setNumber), 
+    score1(score1),
+    score2(score1),
+    bgColor(bgColor),
+    textColor(textColor),
+    accentColor(accentColor),
+    interactColor(interactColor),
+    team1Color(team1Color),
+    team2Color(team2Color)
+{
+    strcpy(this->team1Name, team1Name);
+    strcpy(this->team2Name, team2Name);
+}
+Set::Set(Set &set, int setNum) :
+    setNumber(setNum), 
     score1(0),
     score2(0),
     bgColor(bgColor),
@@ -53,6 +66,7 @@ Set & Set::operator=(const Set &set)
     team2Color = set.team2Color;
     return *this;
 }
+
 
 
 void Set::incrementScore1()
@@ -95,19 +109,25 @@ void Set::useAccentColor()
 {
     glColor3f(accentColor.r, accentColor.g, accentColor.b);
 }
-void Set::useHoverColor(int team)
+void Set::useHoverColor(Color &color)
 {
-    if (team == 1)
-        glColor3f((team1Color.r + interactColor.r)/2.0, (team1Color.g + interactColor.g)/2.0, (team1Color.b + interactColor.b)/2.0);
-    else
-        glColor3f((team2Color.r + interactColor.r)/2.0, (team2Color.g + interactColor.g)/2.0, (team2Color.b + interactColor.b)/2.0);
+    Color colorUse;
+
+    colorUse.r = (color.r + interactColor.r)/2.0;
+    colorUse.g = (color.g + interactColor.g)/2.0;
+    colorUse.b = (color.b + interactColor.b)/2.0;
+    
+    glColor3f(colorUse.r, colorUse.g, colorUse.b);
 }
-void Set::useClickColor(int team)
+void Set::useClickColor(Color &color)
 {
-    if (team == 1)
-        glColor3f((team1Color.r + interactColor.r*2)/3.0, (team1Color.g + interactColor.g*2)/3.0, (team1Color.b + interactColor.b*2)/3.0);
-    else
-        glColor3f((team2Color.r + interactColor.r*2)/3.0, (team2Color.g + interactColor.g*2)/3.0, (team2Color.b + interactColor.b*2)/3.0);
+    Color colorUse;
+
+    colorUse.r = (color.r + interactColor.r*2)/3.0;
+    colorUse.g = (color.g + interactColor.g*2)/3.0;
+    colorUse.b = (color.b + interactColor.b*2)/3.0;
+    
+    glColor3f(colorUse.r, colorUse.g, colorUse.b);
 }
 void Set::useTeam1Color()
 {
@@ -158,39 +178,25 @@ Color & Set::getInteractColor()
 {
     return interactColor;
 }
-Color & Set::getHoverColor(int team)
+Color & Set::getHoverColor(Color &color)
 {
-    Color color;
-    if (team == 1)
-    {
-        color.r = (team1Color.r + interactColor.r)/2.0;
-        color.g = (team1Color.g + interactColor.g)/2.0;
-        color.b = (team1Color.b + interactColor.b)/2.0;
-    }
-    else
-    {
-        color.r = (team2Color.r + interactColor.r)/2.0;
-        color.g = (team2Color.g + interactColor.g)/2.0;
-        color.b = (team2Color.b + interactColor.b)/2.0;
-    }
-    return color;
+    Color colorRet;
+
+    colorRet.r = (color.r + interactColor.r)/2.0;
+    colorRet.g = (color.g + interactColor.g)/2.0;
+    colorRet.b = (color.b + interactColor.b)/2.0;
+
+    return colorRet;
 }
-Color & Set::getClickColor(int team)
+Color & Set::getClickColor(Color &color)
 {
-    Color color;
-    if (team == 1)
-    {
-        color.r = (team1Color.r + interactColor.r*2)/3.0;
-        color.g = (team1Color.g + interactColor.g*2)/3.0;
-        color.b = (team1Color.b + interactColor.b*2)/3.0;
-    }
-    else
-    {
-        color.r = (team2Color.r + interactColor.r*2)/3.0;
-        color.g = (team2Color.g + interactColor.g*2)/3.0;
-        color.b = (team2Color.b + interactColor.b*2)/3.0;
-    }
-    return color;
+    Color colorRet;
+
+    colorRet.r = (color.r + interactColor.r*2)/3.0;
+    colorRet.g = (color.g + interactColor.g*2)/3.0;
+    colorRet.b = (color.b + interactColor.b*2)/3.0;
+    
+    return colorRet;
 }
 Color & Set::getTeam1Color()
 {
@@ -200,6 +206,30 @@ Color & Set::getTeam2Color()
 {
     return team2Color;
 }
+
+void Set::setSetNumber(int setNum)
+{
+    setNumber = setNum;
+}
+void Set::setScore1(int score)
+{
+    score1 = score;
+}
+void Set::setScore2(int score)
+{
+    score2 = score;
+}
+
+void Set::setTeam1Name(char * name)
+{
+    strcpy(team1Name, name);
+}
+void Set::setTeam2Name(char * name)
+{
+    strcpy(team2Name, name);
+}
+
+
 
 void Set::setBgColor(Color &color)//oops, need color arg
 {

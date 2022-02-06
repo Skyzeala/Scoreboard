@@ -44,7 +44,7 @@ Color::Color() :
 {
 }
 
-Color::Color(float r, float g, float b, float a) : 
+Color::Color(float r, float g, float b) : 
     r(r), 
     g(g), 
     b(b) 
@@ -53,6 +53,9 @@ Color::Color(float r, float g, float b, float a) :
 
 Color::~Color()
 {
+    r = 0;
+    g = 0;
+    b = 0;
 }
 
 Color & Color::operator=(const Color &color)

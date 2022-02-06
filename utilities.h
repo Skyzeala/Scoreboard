@@ -30,7 +30,7 @@ struct Color
     float g;
     float b;
     Color();
-    Color(float r, float g, float b, float a = 1);
+    Color(float r, float g, float b);
     ~Color();
     Color & operator=(const Color &color);
 };

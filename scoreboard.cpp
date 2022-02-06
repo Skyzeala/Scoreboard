@@ -41,6 +41,7 @@ make function names alight with button labels to avoid confusion for other progr
 
 #include "utilities.h"
 #include "interface.h"
+#include "set.h"
 
 #include <ctime>
 #include <vector>
@@ -78,26 +79,24 @@ vector<Button> editScreenButtons;
 
 ProgramState programState = HomeScreen;
 
-//
-Color bgColor = Color(0.6,0.7,0.9);
-Color textColor = Color(0.0,0.1,0);
-Color accentColor = Color(0.8,0.8,0.8);
-Color interactColor = Color(0.3,0.3,0.3);
-Color team1Color = Color(0.8,0.2,0);
-Color team2Color = Color(0,0.2,0.8);
+vector<Set> game;
 
-char team1Name[STRING_MAX + 1] = "Home";
-char team2Name[STRING_MAX + 1] = "Guest";
-//
+Color accentColor;
+Color team1Color;
+Color team2Color;
+Color team1ColorHover;
+Color team2ColorHover;
+Color team1ColorClick;
+Color team2ColorClick;
 
 char inputString[STRING_MAX + 1];
 int textBoxIndex = 0;
 
-//
-int score1 = 0;
-int score2 = 0;
+
 int setNumber = 1;
-//
+int setToLoad = 1;
+
+void init();
 
 //visual program state screens
 void displayHomeScreen();
@@ -136,7 +135,8 @@ int main(int argc, char *argv[])
 {
     mouseScaleX = 1;
     mouseScaleY = 1;
-    createButtons();
+    
+    init();
 
     glutInit(&argc, argv);          //initialize GLUT
     glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT); //make a window
@@ -184,20 +184,24 @@ void displayHomeScreen()
     time_t currTime = time(0);
     struct tm timeStruct;
     char timeStr[STRING_MAX];
-    char scoreA[STRING_MAX];
-    char scoreB[STRING_MAX];
+    char team1Name[STRING_MAX];
+    char team2Name[STRING_MAX];
+    char score1[STRING_MAX];
+    char score2[STRING_MAX];
     char plus[STRING_MAX] = "+";
     char minus[STRING_MAX] = "-";
     char set[STRING_MAX];
     char saveSet[STRING_MAX] = "Save";
     char discardSet[STRING_MAX] = "Discard";
-    toString(score1, scoreA);
-    toString(score2, scoreB);
+    game[setNumber - 1].getTeam1Name(team1Name);
+    game[setNumber - 1].getTeam1Name(team2Name);
+    toString(game[setNumber - 1].getScore1(), score1);
+    toString(game[setNumber - 1].getScore2(), score2);
     toString(setNumber, set);
     timeStruct = *localtime(&currTime);
     strftime(timeStr, STRING_MAX, "%I:%M:%S", &timeStruct);
 
-    glClearColor(bgColor.r, bgColor.g, bgColor.b, 1);
+    game[setNumber - 1].useBgColor();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
 
@@ -206,12 +210,12 @@ void displayHomeScreen()
         drawButton(homeScreenButtons[i]);
     }
 
-    glColor3f(textColor.r, textColor.g, textColor.b);
+    game[setNumber - 1].useTextColor();
     drawString(280, 60, 50, timeStr, Bold);
     drawString(105, 132, 25, team1Name, BoldItalic);
     drawString(455, 132, 25, team2Name, BoldItalic);
-    drawString(95, 340, 215, scoreA, Heavy);
-    drawString(445, 340, 215, scoreB, Heavy);
+    drawString(95, 340, 215, score1, Heavy);
+    drawString(445, 340, 215, score2, Heavy);
 
     drawString(368, 215, 55, set, Bold);
     drawString(372, 275, 25, saveSet, Regular);
@@ -239,15 +243,19 @@ void displayTextBox()
     char underscores[STRING_MAX] = "_ _ _ _ _ _ _ _ _ _ _ _ _ _ _";
     char editing[STRING_MAX] = "Editing";
     char team[STRING_MAX] = "team";
-    char setNumber[STRING_MAX] = "set number";
+    char setNum[STRING_MAX] = "set number";
     char save[STRING_MAX] = "Save";
     char discard[STRING_MAX] = "Discard";
+    char team1Name[STRING_MAX];
+    char team2Name[STRING_MAX];
+    game[setNumber - 1].getTeam1Name(team1Name);
+    game[setNumber - 1].getTeam2Name(team2Name);
     
-    glClearColor(bgColor.r, bgColor.g, bgColor.b, 1);
+    game[setNumber - 1].useBgColor();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
-    glColor3f(textColor.r, textColor.g, textColor.b);
+    game[setNumber - 1].useTextColor();
     drawString(235, 50, 30, editing, Bold);
     if (programState == EditTeam1)
     {
@@ -260,17 +268,16 @@ void displayTextBox()
         drawString(465, 50, 30, team2Name, Bold);
     }
     else if (programState == EditSetNum)
-        drawString(375, 50, 30, setNumber, Bold);
+        drawString(375, 50, 30, setNum, Bold);
 
     //draw box for text to be entered into
     drawButton(15, 100, 785, 200, accentColor);
 
     //draw current input
-    glColor3f(textColor.r, textColor.g, textColor.b);
+    game[setNumber - 1].useTextColor();
     drawString(21, 165, 42, inputString, Bold);
 
-    //text box underscores
-    glColor3f(textColor.r, textColor.g, textColor.b);
+    //text box underscores for user input spaces
     drawString(25, 180, 21, underscores, Regular);
     drawString(31, 180, 21, underscores, Regular);
     drawString(402, 180, 21, underscores, Regular);
@@ -288,7 +295,7 @@ void displayTextBox()
     {
         drawButton(editScreenButtons[i]);
     }
-    glColor3f(textColor.r, textColor.g, textColor.b);
+    game[setNumber - 1].useTextColor();
     drawString(125, 300, 40, discard, Bold);
     drawString(540, 300, 40, save, Bold);
 
@@ -390,17 +397,21 @@ void drawButton(float startx, float starty, float endx, float endy, Color &color
 
 void drawButton(Button &button)
 {
+    Color color;
+
     glLoadIdentity();
     glPushMatrix();
-    //change button color when hovered over
+    //change button color when hovered over or clicked on
     if (button.over(mousePositionX * mouseScaleX, mousePositionY * mouseScaleY) && (button.purpose == Hoverable || button.purpose == Clickable))
     {
-        if (button.purpose == Clickable && mousePressed)
-            glColor3f((button.color->r + interactColor.r)/2.0, (button.color->g + interactColor.g)/2.0, (button.color->b + interactColor.b)/2.0);
-        else
-            glColor3f((button.color->r + interactColor.r/2.0)/1.5, (button.color->g + interactColor.g/2.0)/1.5, (button.color->b + interactColor.b/2.0)/1.5);
+
+        if (button.purpose == Clickable && mousePressed) //if button is clicked
+            glColor3f(team1ColorClick.r, team1ColorClick.g, team1ColorClick.b);
+        else //if button is hovered
+            glColor3f(team1ColorHover.r, team1ColorHover.g, team1ColorHover.b);
+
     }
-    else
+    else //use regular button color when not clicked or hovered
         glColor3f(button.color->r, button.color->g, button.color->b);
     
     glTranslatef(-1,1,0);
@@ -445,11 +456,15 @@ void reshapeCanvas(int w, int h)
     glViewport(0, 0, w, h);
 }
 
-
+void init()
+{
+    loadSet();
+    createButtons();
+}
 
 void createButtons()
 {
-    //team names buttons
+    //team names panels
     homeScreenButtons.push_back(Button(100, 100, 350, 140, &accentColor, Clickable, stateToEditTeam1));
     homeScreenButtons.push_back(Button(450, 100, 700, 140, &accentColor, Clickable, stateToEditTeam2));
 
@@ -470,38 +485,12 @@ void createButtons()
     homeScreenButtons.push_back(Button(360, 240, 440, 290, &accentColor, Clickable, saveSet));
     homeScreenButtons.push_back(Button(360, 300, 440, 350, &accentColor, Clickable, discardSet));
 
-
     //text editing buttons
     editScreenButtons.push_back(Button(70, 240, 350, 330, &accentColor, Clickable, discardInput));
     editScreenButtons.push_back(Button(450, 240, 730, 330, &accentColor, Clickable, saveInput));
 }
 
 
-//
-void incrementScore1() //limited to 99 in toString
-{
-    ++score1;
-}
-void incrementScore2()
-{
-    ++score2;
-}
-void decrementScore1()
-{
-    if (score1 > 0)
-        --score1;
-}
-void decrementScore2()
-{
-    if (score2 > 0)
-        --score2;
-}
-void resetScore()
-{
-    score1 = 0;
-    score2 = 0;
-}
-//
 
 void stateToEditTeam1()
 {
@@ -524,15 +513,18 @@ void saveInput()
     switch(programState)
     {
         case EditTeam1:
-            strcpy(team1Name, inputString);
+            game[setNumber - 1].setTeam1Name(inputString);
             break;
         case EditTeam2:
-            strcpy(team2Name, inputString);
+            game[setNumber - 1].setTeam2Name(inputString);
             break;
         case EditSetNum:
             toInt(inputString, setNumber);
             if (setNumber > GAME_MAX || setNumber < 1)
+            {
                 setNumber = 1;
+                game[setNumber - 1].setSetNumber(setNumber);
+            }
             break;
         default:
             break;
@@ -561,6 +553,32 @@ void loadSet()
 {
     //todo
     //extract scores and timer (maybe also colors) and display them as if it were current
+    if (setToLoad > game.size() + 1)
+    {
+        setToLoad = game.size();
+        game.push_back(Set());
+    }
+    else if (setToLoad == game.size() + 1)
+    {
+        game.push_back(Set(game[setToLoad - 1], setToLoad));
+    }
+
+
+
+    setNumber = game[setToLoad - 1].getSetNumber();
+    if (setNumber != setToLoad)
+    {
+        setNumber = setToLoad;
+        game[setToLoad - 1].setSetNumber(setNumber);
+    }
+    
+    accentColor = game[setToLoad - 1].getAccentColor();
+    team1Color = game[setToLoad - 1].getTeam1Color();
+    team2Color = game[setToLoad - 1].getTeam2Color();
+    team1ColorHover = game[setToLoad - 1].getHoverColor(team1Color);
+    team2ColorHover = game[setToLoad - 1].getHoverColor(team2Color);
+    team1ColorClick = game[setToLoad - 1].getClickColor(team1Color);
+    team2ColorClick = game[setToLoad - 1].getClickColor(team2Color);
 }
 void discardSet()
 {
