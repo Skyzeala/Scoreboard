@@ -16,7 +16,6 @@ glut documentation https://www.opengl.org/resources/libraries/glut/spec3/spec3.h
 
 /*
 TODO:
-store multiple game scores
 change team colors
 make buttons positions depend on initial screen size or set positions, make it easier to move them in bulk
 
@@ -36,7 +35,7 @@ loadSet loads the colors, team names, and score data of a selected set
 
 need to do:
 clarify the discard set button so that users are not easily confused about the function or purpose of it
-make function names alight with button labels to avoid confusion for other programmers
+make function names align with button labels to avoid confusion for other programmers
 */
 
 #include "utilities.h"
@@ -45,7 +44,6 @@ make function names alight with button labels to avoid confusion for other progr
 
 #include <ctime>
 #include <vector>
-#include <functional> //c++11, used for bind
 
 #ifdef __APPLE__
 #include <GLUT/glut.h>
@@ -92,6 +90,7 @@ int textBoxIndex = 0;
 unsigned int setNumber = 1;
 unsigned int setToLoad = 1;
 
+//initialize the scoreboard for first use, set up the first Set object
 void init();
 
 //visual program state screens
@@ -189,7 +188,7 @@ void displayHomeScreen()
     char saveSet[STRING_MAX] = "Save";
     char discardSet[STRING_MAX] = "Discard";
     game[setNumber - 1].getTeam1Name(team1Name);
-    game[setNumber - 1].getTeam1Name(team2Name);
+    game[setNumber - 1].getTeam2Name(team2Name);
     toString(game[setNumber - 1].getScore1(), score1);
     toString(game[setNumber - 1].getScore2(), score2);
     toString(setNumber, set);
@@ -513,11 +512,7 @@ void saveInput()
             break;
         case EditSetNum:
             toInt(inputString, setNumber);
-            if (setNumber > GAME_MAX || setNumber < 1)
-            {
-                setNumber = 1;
-                game[setNumber - 1].setSetNumber(setNumber);
-            }
+            game[setNumber - 1].setSetNumber(setNumber);
             break;
         default:
             break;
@@ -565,19 +560,27 @@ void saveSet()
 void loadSet()
 {
     //todo
-    //extract scores and timer (maybe also colors) and display them as if it were current
+
+    //if the set is already loaded, abort
+    if (setToLoad == setNumber && game.size() >= setNumber)
+        return;
+    
+    //if the set to load does not exist, create a new set
     if (setToLoad > game.size() + 1)
     {
         setToLoad = game.size();
         game.push_back(Set());
     }
-    else if (setToLoad == game.size() + 1)
+    else if (setToLoad == game.size() + 1 && game.size() > 0)
     {
         game.push_back(Set(game[setToLoad - 1], setToLoad));
     }
+    else if (setToLoad == game.size() + 1)
+    {
+        game.push_back(Set());
+    }
 
-
-
+    //the set to load has been found or created, now load the data from it
     setNumber = game[setToLoad - 1].getSetNumber();
     if (setNumber != setToLoad)
     {
@@ -588,7 +591,6 @@ void loadSet()
     accentColor = game[setToLoad - 1].getAccentColor();
     team1Color = game[setToLoad - 1].getTeam1Color();
     team2Color = game[setToLoad - 1].getTeam2Color();
-
 }
 void discardSet()
 {

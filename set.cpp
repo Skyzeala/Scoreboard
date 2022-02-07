@@ -209,6 +209,9 @@ Color Set::getTeam2Color()
 
 void Set::setSetNumber(int setNum)
 {
+    if (setNumber > GAME_MAX || setNumber < 1)
+        setNumber = 1;
+    
     setNumber = setNum;
 }
 void Set::setScore1(int score)
