@@ -14,8 +14,8 @@ class Set
 {
 public:
     Set();
-    Set(Set &set);
-    Set(Set &set, int setNum); //create new set for the same teams, reset the score 
+    Set(const Set &set);
+    Set(const Set &set, int setNum); //create new set for the same teams, reset the score 
     ~Set(); //no dynamic memory, so just a default deconstructor
     Set & operator=(const Set &set);
 
@@ -40,14 +40,15 @@ public:
     void getTeam1Name(char * name);
     void getTeam2Name(char * name);
 
-    Color & getBgColor();
-    Color & getTextColor();
-    Color & getAccentColor();
-    Color & getInteractColor();
-    Color & getHoverColor(Color &color); //calculates color and returns it
-    Color & getClickColor(Color &color); //calculates color and returns it
-    Color & getTeam1Color();
-    Color & getTeam2Color();
+    //let gcc optimize the return, modern compilers know how to make returning an object efficient
+    Color getBgColor();
+    Color getTextColor();
+    Color getAccentColor();
+    Color getInteractColor();
+    Color getHoverColor(Color &color); //calculates color and returns it
+    Color getClickColor(Color &color); //calculates color and returns it
+    Color getTeam1Color();
+    Color getTeam2Color();
 
     void setSetNumber(int setNum);
     void setScore1(int score);

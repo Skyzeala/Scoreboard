@@ -14,7 +14,7 @@ Set::Set() :
     team2Color(Color(0,0.2,0.8))
 {
 }
-Set::Set(Set &set) :
+Set::Set(const Set &set) :
     setNumber(setNumber), 
     score1(score1),
     score2(score1),
@@ -28,7 +28,7 @@ Set::Set(Set &set) :
     strcpy(this->team1Name, team1Name);
     strcpy(this->team2Name, team2Name);
 }
-Set::Set(Set &set, int setNum) :
+Set::Set(const Set &set, int setNum) :
     setNumber(setNum), 
     score1(0),
     score2(0),
@@ -162,23 +162,23 @@ void Set::getTeam2Name(char * name)
     strcpy(name, team2Name);
 }
 
-Color & Set::getBgColor()
+Color Set::getBgColor()
 {
     return bgColor;
 }
-Color & Set::getTextColor()
+Color Set::getTextColor()
 {
     return textColor;
 }
-Color & Set::getAccentColor()
+Color Set::getAccentColor()
 {
     return accentColor;
 }
-Color & Set::getInteractColor()
+Color Set::getInteractColor()
 {
     return interactColor;
 }
-Color & Set::getHoverColor(Color &color)
+Color Set::getHoverColor(Color &color)
 {
     Color colorRet;
 
@@ -188,7 +188,7 @@ Color & Set::getHoverColor(Color &color)
 
     return colorRet;
 }
-Color & Set::getClickColor(Color &color)
+Color Set::getClickColor(Color &color)
 {
     Color colorRet;
 
@@ -198,11 +198,11 @@ Color & Set::getClickColor(Color &color)
     
     return colorRet;
 }
-Color & Set::getTeam1Color()
+Color Set::getTeam1Color()
 {
     return team1Color;
 }
-Color & Set::getTeam2Color()
+Color Set::getTeam2Color()
 {
     return team2Color;
 }

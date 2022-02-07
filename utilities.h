@@ -30,6 +30,7 @@ struct Color
     float g;
     float b;
     Color();
+    Color(const Color &color);
     Color(float r, float g, float b);
     ~Color();
     Color & operator=(const Color &color);
@@ -44,7 +45,9 @@ const float shearMatrix [] = {1,0,0,0, //the matrix for the italics text transfo
                         0,0,0,1};
 
 void toString(int score, char * string);
+void toString(unsigned int score, char * string);
 void toInt(char * string, int &score);
+void toInt(char * string, unsigned int &score);
 char * strcpy(char * dest, char * src);
 
 #endif

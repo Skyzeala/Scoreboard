@@ -84,17 +84,12 @@ vector<Set> game;
 Color accentColor;
 Color team1Color;
 Color team2Color;
-Color team1ColorHover;
-Color team2ColorHover;
-Color team1ColorClick;
-Color team2ColorClick;
 
 char inputString[STRING_MAX + 1];
 int textBoxIndex = 0;
 
-
-int setNumber = 1;
-int setToLoad = 1;
+unsigned int setNumber = 1;
+unsigned int setToLoad = 1;
 
 void init();
 
@@ -404,12 +399,10 @@ void drawButton(Button &button)
     //change button color when hovered over or clicked on
     if (button.over(mousePositionX * mouseScaleX, mousePositionY * mouseScaleY) && (button.purpose == Hoverable || button.purpose == Clickable))
     {
-
         if (button.purpose == Clickable && mousePressed) //if button is clicked
-            glColor3f(team1ColorClick.r, team1ColorClick.g, team1ColorClick.b);
+            game[setNumber - 1].useClickColor(*(button.color));
         else //if button is hovered
-            glColor3f(team1ColorHover.r, team1ColorHover.g, team1ColorHover.b);
-
+            game[setNumber - 1].useHoverColor(*(button.color));
     }
     else //use regular button color when not clicked or hovered
         glColor3f(button.color->r, button.color->g, button.color->b);
@@ -575,10 +568,6 @@ void loadSet()
     accentColor = game[setToLoad - 1].getAccentColor();
     team1Color = game[setToLoad - 1].getTeam1Color();
     team2Color = game[setToLoad - 1].getTeam2Color();
-    team1ColorHover = game[setToLoad - 1].getHoverColor(team1Color);
-    team2ColorHover = game[setToLoad - 1].getHoverColor(team2Color);
-    team1ColorClick = game[setToLoad - 1].getClickColor(team1Color);
-    team2ColorClick = game[setToLoad - 1].getClickColor(team2Color);
 }
 void discardSet()
 {
