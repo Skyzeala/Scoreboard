@@ -96,7 +96,11 @@ void Set::resetScore()
 }
 
 
-
+void Set::paintBg()
+{
+    glClearColor(bgColor.r, bgColor.g, bgColor.b, 1);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
 void Set::useBgColor()
 {
     glColor3f(bgColor.r, bgColor.g, bgColor.b);

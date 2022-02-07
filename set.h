@@ -25,6 +25,7 @@ public:
     void decrementScore2();
     void resetScore();
 
+    void paintBg();
     void useBgColor();
     void useTextColor();
     void useAccentColor();

@@ -195,9 +195,7 @@ void displayHomeScreen()
     timeStruct = *localtime(&currTime);
     strftime(timeStr, STRING_MAX, "%I:%M:%S", &timeStruct);
 
-    game[setNumber - 1].useBgColor();
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    
+    game[setNumber - 1].paintBg();
 
     for (unsigned int i = 0; i < homeScreenButtons.size(); i++)
     {
@@ -245,9 +243,7 @@ void displayTextBox()
     game[setNumber - 1].getTeam1Name(team1Name);
     game[setNumber - 1].getTeam2Name(team2Name);
     
-    game[setNumber - 1].useBgColor();
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+    game[setNumber - 1].paintBg();
 
     game[setNumber - 1].useTextColor();
     drawString(235, 50, 30, editing, Bold);
@@ -511,13 +507,15 @@ void saveInput()
             game[setNumber - 1].setTeam2Name(inputString);
             break;
         case EditSetNum:
-            toInt(inputString, setNumber);
+            toInt(inputString, setToLoad);
+            loadSet();
             game[setNumber - 1].setSetNumber(setNumber);
             break;
         default:
             break;
     }
     discardInput(); //clean up input messes and set program state back to home
+    stateToHomeScreen();
 }
 void discardInput()
 {
@@ -559,8 +557,6 @@ void saveSet()
 }
 void loadSet()
 {
-    //todo
-
     //if the set is already loaded, abort
     if (setToLoad == setNumber && game.size() >= setNumber)
         return;
