@@ -45,6 +45,7 @@ make function names alight with button labels to avoid confusion for other progr
 
 #include <ctime>
 #include <vector>
+#include <functional> //c++11, used for bind
 
 #ifdef __APPLE__
 #include <GLUT/glut.h>
@@ -103,14 +104,13 @@ void drawString(float posx, float posy, float size, char * str, FontStyle style)
 void drawButton(float startx, float starty, float endx, float endy, Color &color);
 void drawButton(Button &button);
 
-//button action functions
-//
+//button action functions, calls set functions
 void incrementScore1();
 void incrementScore2();
 void decrementScore1();
 void decrementScore2();
 void resetScore();
-//
+
 
 void stateToEditTeam1();
 void stateToEditTeam2();
@@ -535,6 +535,26 @@ void discardInput()
     //go back to home state
     stateToHomeScreen();
 }
+void incrementScore1()
+{
+    game[setNumber - 1].incrementScore1();
+}
+void incrementScore2()
+{
+    game[setNumber - 1].incrementScore2();
+}
+void decrementScore1()
+{
+    game[setNumber - 1].decrementScore1();
+}
+void decrementScore2()
+{
+    game[setNumber - 1].decrementScore2();
+}
+void resetScore()
+{
+    game[setNumber - 1].resetScore();
+}
 void saveSet()
 {
     //todo
@@ -568,6 +588,7 @@ void loadSet()
     accentColor = game[setToLoad - 1].getAccentColor();
     team1Color = game[setToLoad - 1].getTeam1Color();
     team2Color = game[setToLoad - 1].getTeam2Color();
+
 }
 void discardSet()
 {

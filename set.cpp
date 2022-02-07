@@ -15,32 +15,32 @@ Set::Set() :
 {
 }
 Set::Set(const Set &set) :
-    setNumber(setNumber), 
-    score1(score1),
-    score2(score1),
-    bgColor(bgColor),
-    textColor(textColor),
-    accentColor(accentColor),
-    interactColor(interactColor),
-    team1Color(team1Color),
-    team2Color(team2Color)
+    setNumber(set.setNumber), 
+    score1(set.score1),
+    score2(set.score1),
+    bgColor(set.bgColor),
+    textColor(set.textColor),
+    accentColor(set.accentColor),
+    interactColor(set.interactColor),
+    team1Color(set.team1Color),
+    team2Color(set.team2Color)
 {
-    strcpy(this->team1Name, team1Name);
-    strcpy(this->team2Name, team2Name);
+    strcpy(this->team1Name, set.team1Name);
+    strcpy(this->team2Name, set.team2Name);
 }
 Set::Set(const Set &set, int setNum) :
     setNumber(setNum), 
     score1(0),
     score2(0),
-    bgColor(bgColor),
-    textColor(textColor),
-    accentColor(accentColor),
-    interactColor(interactColor),
-    team1Color(team1Color),
-    team2Color(team2Color)
+    bgColor(set.bgColor),
+    textColor(set.textColor),
+    accentColor(set.accentColor),
+    interactColor(set.interactColor),
+    team1Color(set.team1Color),
+    team2Color(set.team2Color)
 {
-    strcpy(this->team1Name, team1Name);
-    strcpy(this->team2Name, team2Name);
+    strcpy(this->team1Name, set.team1Name);
+    strcpy(this->team2Name, set.team2Name);
 }
 
 Set::~Set()
@@ -55,8 +55,8 @@ Set & Set::operator=(const Set &set)
     score1 = set.score1;
     score2 = set.score2;
 
-    strcpy(team1Name, set.team1Name);
-    strcpy(team2Name, set.team2Name);
+    strcpy(this->team1Name, set.team1Name);
+    strcpy(this->team2Name, set.team2Name);
 
     bgColor = set.bgColor;
     textColor = set.textColor;
@@ -109,7 +109,7 @@ void Set::useAccentColor()
 {
     glColor3f(accentColor.r, accentColor.g, accentColor.b);
 }
-void Set::useHoverColor(Color &color)
+void Set::useHoverColor(const Color &color)
 {
     Color colorUse;
 
@@ -119,7 +119,7 @@ void Set::useHoverColor(Color &color)
     
     glColor3f(colorUse.r, colorUse.g, colorUse.b);
 }
-void Set::useClickColor(Color &color)
+void Set::useClickColor(const Color &color)
 {
     Color colorUse;
 
@@ -178,7 +178,7 @@ Color Set::getInteractColor()
 {
     return interactColor;
 }
-Color Set::getHoverColor(Color &color)
+Color Set::getHoverColor(const Color &color)
 {
     Color colorRet;
 
@@ -188,7 +188,7 @@ Color Set::getHoverColor(Color &color)
 
     return colorRet;
 }
-Color Set::getClickColor(Color &color)
+Color Set::getClickColor(const Color &color)
 {
     Color colorRet;
 
@@ -220,38 +220,38 @@ void Set::setScore2(int score)
     score2 = score;
 }
 
-void Set::setTeam1Name(char * name)
+void Set::setTeam1Name(const char * name)
 {
     strcpy(team1Name, name);
 }
-void Set::setTeam2Name(char * name)
+void Set::setTeam2Name(const char * name)
 {
     strcpy(team2Name, name);
 }
 
 
 
-void Set::setBgColor(Color &color)//oops, need color arg
+void Set::setBgColor(const Color &color)//oops, need color arg
 {
     bgColor = color;
 }
-void Set::setTextColor(Color &color)
+void Set::setTextColor(const Color &color)
 {
     textColor = color;
 }
-void Set::setAccentColor(Color &color)
+void Set::setAccentColor(const Color &color)
 {
     accentColor = color;
 }
-void Set::setInteractColor(Color &color)
+void Set::setInteractColor(const Color &color)
 {
     interactColor = color;
 } 
-void Set::setTeam1Color(Color &color)
+void Set::setTeam1Color(const Color &color)
 {
     team1Color = color;
 }
-void Set::setTeam2Color(Color &color)
+void Set::setTeam2Color(const Color &color)
 {
     team2Color = color;
 }

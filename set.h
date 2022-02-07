@@ -16,7 +16,7 @@ public:
     Set();
     Set(const Set &set);
     Set(const Set &set, int setNum); //create new set for the same teams, reset the score 
-    ~Set(); //no dynamic memory, so just a default deconstructor
+    ~Set(); 
     Set & operator=(const Set &set);
 
     void incrementScore1(); //limited to 99 in toString
@@ -28,8 +28,8 @@ public:
     void useBgColor();
     void useTextColor();
     void useAccentColor();
-    void useHoverColor(Color &color); //calculates color and changes to it for the next draws
-    void useClickColor(Color &color); //calculates color and changes to it for the next draws
+    void useHoverColor(const Color &color); //calculates color and changes to it for the next draws
+    void useClickColor(const Color &color); //calculates color and changes to it for the next draws
     void useTeam1Color();
     void useTeam2Color();
 
@@ -45,8 +45,8 @@ public:
     Color getTextColor();
     Color getAccentColor();
     Color getInteractColor();
-    Color getHoverColor(Color &color); //calculates color and returns it
-    Color getClickColor(Color &color); //calculates color and returns it
+    Color getHoverColor(const Color &color); //calculates color and returns it
+    Color getClickColor(const Color &color); //calculates color and returns it
     Color getTeam1Color();
     Color getTeam2Color();
 
@@ -54,15 +54,15 @@ public:
     void setScore1(int score);
     void setScore2(int score);
 
-    void setTeam1Name(char * name);
-    void setTeam2Name(char * name);
+    void setTeam1Name(const char * name);
+    void setTeam2Name(const char * name);
 
-    void setBgColor(Color &color);
-    void setTextColor(Color &color);
-    void setAccentColor(Color &color);
-    void setInteractColor(Color &color); 
-    void setTeam1Color(Color &color);
-    void setTeam2Color(Color &color);
+    void setBgColor(const Color &color);
+    void setTextColor(const Color &color);
+    void setAccentColor(const Color &color);
+    void setInteractColor(const Color &color); 
+    void setTeam1Color(const Color &color);
+    void setTeam2Color(const Color &color);
 
 private:
     int setNumber;

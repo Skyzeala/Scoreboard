@@ -10,9 +10,9 @@ Color::Color() :
 }
 
 Color::Color(const Color &color) : 
-    r(r), 
-    g(g), 
-    b(b) 
+    r(color.r), 
+    g(color.g), 
+    b(color.b) 
 {
 }
 
