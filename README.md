@@ -28,7 +28,7 @@ You will need MinGW and freeglut and then you must tell VSCode where to look for
 * A settings page to allow a user to change team colors, text color, and background color
 
 ## Screenshots
-![screenshot]()
+![screenshot](https://github.com/Skyzeala/Scoreboard/blob/main/screenshotMainMenuDefault.png)
 
 ## Sources and attributions:
 Thank you to Lighthouse3d for the introductive tutorials to help me check my framework setup.
