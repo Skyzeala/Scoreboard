@@ -42,45 +42,45 @@ Color & Color::operator=(const Color &color)
 
 
 
-void toString(int score, char * string)
+void toString(int number, char * string)
 {
-    string[0] = '0' + score / 10;
-    string[1] = '0' + score % 10;
+    string[0] = '0' + number / 10;
+    string[1] = '0' + number % 10;
     string[2] = '\0';
 }
 
-void toString(unsigned int score, char * string)
+void toString(unsigned int number, char * string)
 {
-    string[0] = '0' + score / 10;
-    string[1] = '0' + score % 10;
+    string[0] = '0' + number / 10;
+    string[1] = '0' + number % 10;
     string[2] = '\0';
 }
 
-void toInt(char * string, int &score)
+void toInt(char * string, int &number)
 {
-    score = 0;
+    number = 0;
     int i = (int)string[0] - 48;
     if (i > 0 && i < 10)
-        score = i;
+        number = i;
     i = (int)string[1] - 48;
     if (i > 0 && i < 10)
     {
-        score *= 10;
-        score += i;
+        number *= 10;
+        number += i;
     }
 }
 
-void toInt(char * string, unsigned int &score)
+void toInt(char * string, unsigned int &number)
 {
-    score = 0;
+    number = 0;
     int i = (int)string[0] - 48;
     if (i > 0 && i < 10)
-        score = i;
+        number = i;
     i = (int)string[1] - 48;
     if (i > 0 && i < 10)
     {
-        score *= 10;
-        score += i;
+        number *= 10;
+        number += i;
     }
 }
 

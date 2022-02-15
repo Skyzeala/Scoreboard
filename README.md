@@ -14,6 +14,8 @@ You can find concept art for the interface design in concept_art.png which shows
 
 You will need MinGW and freeglut and then you must tell VSCode where to look for the libraries using a .vscode folder and subsequent files
 
+To run the program, you can hit run in VSCode. To run the program without a debugger your path variable must include the address of the mingw bin folder.
+
 ## Current and future features
 * Current time of day updated every second
 * Display scores between 00 and 99 for two teams
