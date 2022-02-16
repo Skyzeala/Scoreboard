@@ -12,12 +12,14 @@ Set::Set() :
     interactColor(Color(0.3,0.3,0.3)),
     team1Color(Color(0.8,0.2,0)),
     team2Color(Color(0,0.2,0.8))
-{
+{ 
 }
 Set::Set(const Set &set) :
     setNumber(set.setNumber), 
     score1(set.score1),
     score2(set.score1),
+    team1Name("\0"),
+    team2Name("\0"),
     bgColor(set.bgColor),
     textColor(set.textColor),
     accentColor(set.accentColor),
@@ -32,6 +34,8 @@ Set::Set(const Set &set, int setNum) :
     setNumber(setNum), 
     score1(0),
     score2(0),
+    team1Name("\0"),
+    team2Name("\0"),
     bgColor(set.bgColor),
     textColor(set.textColor),
     accentColor(set.accentColor),

@@ -555,30 +555,34 @@ void saveSet()
     //maybe also store team colors and names
 
 }
+
 void loadSet()
 {
     //if the set is already loaded, abort
     if (setToLoad == setNumber && game.size() >= setNumber)
         return;
     
+    if (setToLoad <= 0)
+        setToLoad = 1;
+
     //if the set to load does not exist, create a new set
-    if (setToLoad > game.size() + 1)
+    if (setToLoad > game.size() + 1) //if the set to load is higher than the game vector size, create a new set at the end of the list
     {
-        setToLoad = game.size();
         game.push_back(Set());
+        setToLoad = game.size();
     }
-    else if (setToLoad == game.size() + 1 && game.size() > 0)
+    else if (setToLoad == game.size() + 1 && game.size() > 0) //if the set to load is just after the end of the list, create a new set based on the current set at the end of the list
     {
-        game.push_back(Set(game[setToLoad - 1], setToLoad));
+        game.push_back(Set(game[setNumber - 1], setToLoad));
     }
-    else if (setToLoad == game.size() + 1)
+    else if (setToLoad == game.size() + 1) //if there are no sets
     {
         game.push_back(Set());
     }
 
     //the set to load has been found or created, now load the data from it
     setNumber = game[setToLoad - 1].getSetNumber();
-    if (setNumber != setToLoad)
+    if (setNumber != setToLoad) //if the loading number and object number are not the same, use the loading number
     {
         setNumber = setToLoad;
         game[setToLoad - 1].setSetNumber(setNumber);

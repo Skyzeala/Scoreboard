@@ -1,6 +1,8 @@
 #ifndef _SBUTILITIES_
 #define _SBUTILITIES_
 
+#include <iostream>
+
 enum ProgramState 
 {
     HomeScreen,
