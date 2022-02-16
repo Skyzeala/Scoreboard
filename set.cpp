@@ -17,7 +17,7 @@ Set::Set() :
 Set::Set(const Set &set) :
     setNumber(set.setNumber), 
     score1(set.score1),
-    score2(set.score1),
+    score2(set.score2),
     team1Name("\0"),
     team2Name("\0"),
     bgColor(set.bgColor),
