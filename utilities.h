@@ -2,6 +2,7 @@
 #define _SBUTILITIES_
 
 #include <iostream>
+#include <iomanip>
 
 enum ProgramState 
 {

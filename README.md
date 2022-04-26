@@ -6,7 +6,7 @@ You can find concept art for the interface design in concept_art.png which shows
 
 ## Technical details
 * C++
-* OpenGL
+* OpenGL 4.4.0
 * freeGLUT
 * ctime
 
@@ -33,13 +33,18 @@ To run the program, you can hit run in VSCode. To run the program without a debu
 ![screenshot](https://github.com/Skyzeala/Scoreboard/blob/main/screenshotMainMenuDefault.png)
 
 ## Sources and attributions:
-Thank you to Lighthouse3d for the introductive tutorials to help me check my framework setup.
+* Thank you to Lighthouse3d for the introductive tutorials to help me check my framework setup.
 * I used some of the code from this tutorial:
-http://www.lighthouse3d.com/tutorials/glut-tutorial/preparing-the-window-for-a-reshape/
+* http://www.lighthouse3d.com/tutorials/glut-tutorial/preparing-the-window-for-a-reshape/
 
-I also used code from these stackoverflow questions and answers:
+* Also a thank you to this tutorial for various glut things like fullscreen mode
+* https://www3.ntu.edu.sg/home/ehchua/programming/opengl/cg_introduction.html
+
+* I also used code or suggestions from these stackoverflow questions and answers:
 * https://stackoverflow.com/questions/27276075/glut-mouse-button-down
 * https://stackoverflow.com/questions/24872986/error-a-pointer-to-a-bound-function-may-only-be-used-to-call-the-function
+* https://stackoverflow.com/questions/3032386/glgenbuffers-not-defined
+* https://stackoverflow.com/questions/19102180/how-does-gldrawarrays-know-what-to-draw
 
 
 

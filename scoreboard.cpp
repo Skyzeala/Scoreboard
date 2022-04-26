@@ -38,26 +38,40 @@ clarify the discard set button so that users are not easily confused about the f
 make function names align with button labels to avoid confusion for other programmers
 */
 
+#define _USE_MATH_DEFINES
+#define GLUT_BUILDING_LIB
+#define GL_GLEXT_PROTOTYPES
+
 #include "utilities.h"
 #include "interface.h"
 #include "set.h"
 
 #include <ctime>
 #include <vector>
+#include <cmath>
 
 #ifdef __APPLE__
 #include <GLUT/glut.h>
 #else
-#include <GL/glut.h>
+#include <GL/freeglut.h>
 #endif
 
-#define GLUT_BUILDING_LIB
+
 
 using namespace std;
 
-//initial window dimensions
-int WINDOW_WIDTH = 800;
-int WINDOW_HEIGHT = 500;
+//initial window dimensions and reference coordinates
+int WINDOW_WIDTH = 960;
+int WINDOW_HEIGHT = 540;
+
+const int columns = 18;
+const int rows = 18;
+int column[columns+1];
+int row[rows+1];
+int margin = WINDOW_WIDTH/160;
+
+bool fullScreen = false;
+
 
 //OpenGL and GLUT setup functions
 void displayCB();
@@ -90,8 +104,25 @@ int textBoxIndex = 0;
 unsigned int setNumber = 1;
 unsigned int setToLoad = 1;
 
+const int sphereHeightDetail = 15; //number of vertices between top and bottom of sphere
+const int sphereRotationalDetail = 30; //number of vertices around the sides
+const int numberOfTriangles = sphereHeightDetail*sphereRotationalDetail*2;
+const int numberOfVertices = 3*numberOfTriangles;
+const int numberOfCoordinates = 3*numberOfVertices;
+GLfloat sphereVertices[numberOfCoordinates]; //x and y and z coordinates for each triangle point
+int ballRotX = 0;
+int ballRotY = 0;
+int ballRotZ = 0;
+int ballRotVelocityX = 0;
+int ballRotVelocityY = 0;
+int ballRotVelocityZ = 0;
+
 //initialize the scoreboard for first use, set up the first Set object
 void init();
+//init functions
+void createButtons();
+void createSphere();
+void initColumnsAndRows();
 
 //visual program state screens
 void displayHomeScreen();
@@ -102,6 +133,8 @@ void displayTextBox();
 void drawString(float posx, float posy, float size, char * str, FontStyle style);
 void drawButton(float startx, float starty, float endx, float endy, Color &color);
 void drawButton(Button &button);
+void drawGrid();
+void drawBall(int x, int y, float size, float rotx, float roty, float rotz, int texture);
 
 //button action functions, calls set functions
 void incrementScore1();
@@ -121,8 +154,8 @@ void loadSet();
 void discardSet();
 void resetSets();
 
-//init functions
-void createButtons();
+void fullScreenProgram();
+void windowProgram();
 
 
 int main(int argc, char *argv[])
@@ -134,8 +167,8 @@ int main(int argc, char *argv[])
 
     glutInit(&argc, argv);          //initialize GLUT
     glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT); //make a window
-    glutInitWindowPosition(400,100);
-    glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
+    glutInitWindowPosition(300,100);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
 
     //glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -162,6 +195,7 @@ int main(int argc, char *argv[])
 
 void displayCB()
 {
+    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
     switch (programState)
     {
         case HomeScreen: displayHomeScreen();
@@ -177,6 +211,12 @@ void displayHomeScreen()
 {
     time_t currTime = time(0);
     struct tm timeStruct;
+    char fullscreen[STRING_MAX];
+    if (fullScreen)
+        strcpy(fullscreen,"] [");
+    else
+        strcpy(fullscreen,"[ ]");
+    char settings[STRING_MAX] = "*";
     char timeStr[STRING_MAX];
     char team1Name[STRING_MAX];
     char team2Name[STRING_MAX];
@@ -197,26 +237,35 @@ void displayHomeScreen()
 
     game[setNumber - 1].paintBg();
 
+    //drawGrid();
+
     for (unsigned int i = 0; i < homeScreenButtons.size(); i++)
     {
         drawButton(homeScreenButtons[i]);
     }
 
     game[setNumber - 1].useTextColor();
-    drawString(280, 60, 50, timeStr, Bold);
-    drawString(105, 132, 25, team1Name, BoldItalic);
-    drawString(455, 132, 25, team2Name, BoldItalic);
-    drawString(95, 340, 215, score1, Heavy);
-    drawString(445, 340, 215, score2, Heavy);
 
-    drawString(368, 215, 55, set, Bold);
-    drawString(372, 275, 25, saveSet, Regular);
-    drawString(364, 332, 17, discardSet, Regular);
 
-    drawString(153, 387, 22, minus, Bold);
-    drawString(281, 387, 22, plus, Bold);
-    drawString(504, 387, 22, minus, Bold);
-    drawString(632, 387, 22, plus, Bold);
+    drawString(column[0]+margin*2-1, row[1]+margin+2, 20, fullscreen, Regular);
+    drawString(column[7]-margin*3/2, row[2]-margin*2, 40, timeStr, Bold);
+    drawString(column[17]+2, row[2]-margin*2+2, 56, settings, Bold);
+
+    drawString(column[2]+margin, row[5]-margin*3, 25, team1Name, BoldItalic);
+    drawString(column[10]+margin, row[5]-margin*3, 25, team2Name, BoldItalic);
+    drawString(column[2], row[12]+margin, 222, score1, Heavy);
+    drawString(column[10], row[12]+margin, 222, score2, Heavy);
+
+    drawString(column[8]+margin*2, row[8], 60, set, Bold);
+    drawString(column[8]+margin*3, row[11]-margin*3, 25, saveSet, Regular);
+    drawString(column[8]+margin*2, row[13]-margin*4, 17, discardSet, Regular);
+
+    drawString(column[3]+margin*3, row[14]+margin*2-2, 25, minus, Bold);
+    drawString(column[6]+margin*3, row[14]+margin*2-2, 25, plus, Bold);
+    drawString(column[11]+margin*3, row[14]+margin*2-2, 25, minus, Bold);
+    drawString(column[14]+margin*3, row[14]+margin*2-2, 25, plus, Bold);
+    
+    drawBall(40, 50, 50, ballRotX, ballRotY, ballRotZ, 0);
 
     glutSwapBuffers();
 
@@ -371,8 +420,8 @@ void motionCB(int posx, int posy)
 
 void drawButton(float startx, float starty, float endx, float endy, Color &color)
 {
-    glLoadIdentity();
     glPushMatrix();
+    glLoadIdentity();
     glColor3f(color.r, color.g, color.b);
     glTranslatef(-1,1,0);
     glScalef(2.0f/(WINDOW_WIDTH), -2.0f/(WINDOW_HEIGHT), 1.0f);
@@ -387,10 +436,8 @@ void drawButton(float startx, float starty, float endx, float endy, Color &color
 
 void drawButton(Button &button)
 {
-    Color color;
-
-    glLoadIdentity();
     glPushMatrix();
+    glLoadIdentity();
     //change button color when hovered over or clicked on
     if (button.over(mousePositionX * mouseScaleX, mousePositionY * mouseScaleY) && (button.purpose == Hoverable || button.purpose == Clickable))
     {
@@ -413,7 +460,6 @@ void drawButton(Button &button)
     glPopMatrix();
 }
 
-
 void drawString(float posx, float posy, float size, char * str, FontStyle style)
 {
     for (double i = 0; i <= style%3; i+=0.2)
@@ -421,7 +467,7 @@ void drawString(float posx, float posy, float size, char * str, FontStyle style)
         for (double j = 0; j <= style%3; j+=0.2)
         {
             glPushMatrix();
-            
+            glLoadIdentity();
             glTranslatef((posx + i - WINDOW_WIDTH/2.0)/(WINDOW_WIDTH/2.0), (WINDOW_HEIGHT/2.0 - posy - j)/(WINDOW_HEIGHT/2.0), 0.0f);
             glScalef(size/70000.0f, size/31000.0f, 1.0f);
             if (style >= Italic && style < Underline)
@@ -435,6 +481,133 @@ void drawString(float posx, float posy, float size, char * str, FontStyle style)
     }
 }
 
+void drawGrid()
+{
+    glPushMatrix();
+    glLoadIdentity();
+
+    glColor3f(0.95, 0.95, 0.3);
+    glTranslatef(-1,1,0);
+    glScalef(2.0f/(WINDOW_WIDTH), -2.0f/(WINDOW_HEIGHT), 1.0f);
+    glBegin(GL_LINES);
+        for (int i = 0; i <= columns; ++i)
+        {
+            glVertex2f(column[i],row[0]);
+            glVertex2f(column[i],row[rows]);
+        }
+        for (int j = 0; j <= columns; ++j)
+        {
+            glVertex2f(column[0],row[j]);
+            glVertex2f(column[columns],row[j]);
+        }
+		
+	glEnd();
+    glPopMatrix();
+}
+
+void drawBall(int x, int y, float size, float rotx, float roty, float rotz, int texture)
+{
+    glPushMatrix();
+
+    
+    //glOrtho(-(WINDOW_WIDTH) / 2, (WINDOW_WIDTH) / 2, (WINDOW_HEIGHT) / 2, -(WINDOW_HEIGHT) / 2, -100.0, 100.0);
+    
+
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(45.0f,1.0f*WINDOW_WIDTH/WINDOW_HEIGHT,1,1000);
+    //gluLookAt(0,0,1,0,0,0,0,1,0);
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+    
+    
+
+    x = 480;
+    y = 300;
+    size = 20;
+
+    //glColor3f(0.95, 0.95, 0.3);
+    
+    //glTranslatef(-1,1,0);
+    glTranslatef(-0.5,0.5,-5);
+    //glRotatef(ballRotX, 1.0f, 0.0f, 0.0f);
+    //++ballRotX;
+    glRotatef(ballRotY, 0.0f, 1.0f, 0.0f);
+    ++ballRotY;
+    glRotatef(ballRotZ, 0.0f, 0.0f, 1.0f);
+    ++ballRotZ;
+    //glScalef(2.0f/(WINDOW_WIDTH)*size, 2.0f/(WINDOW_HEIGHT)*size, 1.0f*size);
+    //glScalef(size, size, size);
+    //glTranslatef(x,y,0);
+    
+
+    
+    glBegin(GL_TRIANGLES);
+        for (int i = 0; i < numberOfVertices; ++i)
+        {
+            glColor3f(1.0*i/numberOfVertices, 1.0*(numberOfVertices-i)/numberOfVertices, 1.0*i/numberOfVertices);
+            glVertex3f(sphereVertices[i*3], sphereVertices[i*3+1], sphereVertices[i*3+2]);
+        }
+
+        /*
+        //test triangle
+        glColor3f(1,0.1,0.1);
+        glVertex3f(0, 50, 0);
+        glVertex3f(-33, 80, 0);
+        glVertex3f(33, 80, 0);
+        */
+
+        /*
+        //test cube
+        glColor3f(1.0,0.0,0.0);
+        glVertex3f(-1.0,1.0,1.0);
+        glVertex3f(-1.0,-1.0,1.0);
+        glVertex3f(1.0,-1.0,1.0);
+        glVertex3f(1.0,1.0,1.0);
+        //back
+        glColor3f(0.0,1.0,0.0);
+        glVertex3f(1.0,1.0,-1.0);
+        glVertex3f(1.0,-1.0,-1.0);
+        glVertex3f(-1.0,-1.0,-1.0);
+        glVertex3f(-1.0,1.0,-1.0);
+        //right
+        glColor3f(0.0,0.0,1.0);
+        glVertex3f(1.0,1.0,1.0);
+        glVertex3f(1.0,-1.0,1.0);
+        glVertex3f(1.0,-1.0,-1.0);
+        glVertex3f(1.0,1.0,-1.0);
+        //left
+        glColor3f(1.0,1.0,0.0);
+        glVertex3f(-1.0,1.0,-1.0);
+        glVertex3f(-1.0,-1.0,-1.0);
+        glVertex3f(-1.0,-1.0,1.0);
+        glVertex3f(-1.0,1.0,1.0);
+        //top
+        glColor3f(0.0,1.0,1.0);
+        glVertex3f(-1.0,1.0,-1.0);
+        glVertex3f(-1.0,1.0,1.0);
+        glVertex3f(1.0,1.0,1.0);
+        glVertex3f(1.0,1.0,-1.0);
+        //bottom
+        glColor3f(1.0,0.0,1.0);
+        glVertex3f(-1.0,-1.0,-1.0);
+        glVertex3f(-1.0,-1.0,1.0);
+        glVertex3f(1.0,-1.0,1.0);
+        glVertex3f(1.0,-1.0,-1.0);
+        */
+    glEnd();
+    glDisable(GL_DEPTH_TEST);
+    glPopMatrix();
+
+    
+
+
+}
+
 
 void reshapeCanvas(int w, int h)
 {
@@ -446,38 +619,186 @@ void reshapeCanvas(int w, int h)
 
 void init()
 {
-    loadSet();
+    
+    initColumnsAndRows();
     createButtons();
+    loadSet();
+    createSphere();
 }
 
 void createButtons()
 {
-    //team names panels
-    homeScreenButtons.push_back(Button(100, 100, 350, 140, &accentColor, Clickable, stateToEditTeam1));
-    homeScreenButtons.push_back(Button(450, 100, 700, 140, &accentColor, Clickable, stateToEditTeam2));
-
+    homeScreenButtons.push_back(Button(column[2]+margin, row[3]+margin, column[8]-margin, row[5]-margin, &accentColor, Clickable, stateToEditTeam1));
+    homeScreenButtons.push_back(Button(column[10]+margin, row[3]+margin, column[16]-margin, row[5]-margin, &accentColor, Clickable, stateToEditTeam2));
+    
     //main score display panels
-    homeScreenButtons.push_back(Button(100, 150, 220, 350, &team1Color, DisplayOnly, nullptr));
-    homeScreenButtons.push_back(Button(230, 150, 350, 350, &team1Color, DisplayOnly, nullptr));
-    homeScreenButtons.push_back(Button(450, 150, 570, 350, &team2Color, DisplayOnly, nullptr));
-    homeScreenButtons.push_back(Button(580, 150, 700, 350, &team2Color, DisplayOnly, nullptr));
+    homeScreenButtons.push_back(Button(column[2]+margin, row[5]+margin, column[5]-margin, row[13]-margin, &team1Color, DisplayOnly, nullptr));
+    homeScreenButtons.push_back(Button(column[5]+margin, row[5]+margin, column[8]-margin, row[13]-margin, &team1Color, DisplayOnly, nullptr));
+    homeScreenButtons.push_back(Button(column[10]+margin, row[5]+margin, column[13]-margin, row[13]-margin, &team2Color, DisplayOnly, nullptr));
+    homeScreenButtons.push_back(Button(column[13]+margin, row[5]+margin, column[16]-margin, row[13]-margin, &team2Color, DisplayOnly, nullptr));
 
     //add and subtract from score buttons
-    homeScreenButtons.push_back(Button(100, 360, 220, 400, &accentColor, Clickable, decrementScore1));
-    homeScreenButtons.push_back(Button(230, 360, 350, 400, &accentColor, Clickable, incrementScore1));
-    homeScreenButtons.push_back(Button(450, 360, 570, 400, &accentColor, Clickable, decrementScore2));
-    homeScreenButtons.push_back(Button(580, 360, 700, 400, &accentColor, Clickable, incrementScore2));
+    homeScreenButtons.push_back(Button(column[2]+margin, row[13]+margin, column[5]-margin, row[15]-margin, &accentColor, Clickable, decrementScore1));
+    homeScreenButtons.push_back(Button(column[5]+margin, row[13]+margin, column[8]-margin, row[15]-margin, &accentColor, Clickable, incrementScore1));
+    homeScreenButtons.push_back(Button(column[10]+margin, row[13]+margin, column[13]-margin, row[15]-margin, &accentColor, Clickable, decrementScore2));
+    homeScreenButtons.push_back(Button(column[13]+margin, row[13]+margin, column[16]-margin, row[15]-margin, &accentColor, Clickable, incrementScore2));
 
-    //set display and set options
-    homeScreenButtons.push_back(Button(360, 150, 440, 230, &accentColor, Clickable, stateToEditSetNum));
-    homeScreenButtons.push_back(Button(360, 240, 440, 290, &accentColor, Clickable, saveSet));
-    homeScreenButtons.push_back(Button(360, 300, 440, 350, &accentColor, Clickable, discardSet));
+    //set display and set option buttons
+    homeScreenButtons.push_back(Button(column[8]+margin, row[5]+margin, column[10]-margin, row[9]-margin, &accentColor, Clickable, stateToEditSetNum));
+    homeScreenButtons.push_back(Button(column[8]+margin, row[9]+margin, column[10]-margin, row[11]-margin, &accentColor, Clickable, saveSet));
+    homeScreenButtons.push_back(Button(column[8]+margin, row[11]+margin, column[10]-margin, row[13]-margin, &accentColor, Clickable, discardSet));
+    
+    //timer time panel
+    homeScreenButtons.push_back(Button(column[2]+margin, row[16]+margin, column[5]-margin, row[18]-margin, &accentColor, DisplayOnly, nullptr));
+    homeScreenButtons.push_back(Button(column[5]+margin, row[16]+margin, column[13]-margin, row[18]-margin, &accentColor, DisplayOnly, nullptr));
+    homeScreenButtons.push_back(Button(column[13]+margin, row[16]+margin, column[16]-margin, row[18]-margin, &accentColor, DisplayOnly, nullptr));
+
+    //time panel
+    homeScreenButtons.push_back(Button(column[5]+margin, row[0]+margin, column[13]-margin, row[2]-margin, &accentColor, DisplayOnly, nullptr));
+    //settings panel
+    homeScreenButtons.push_back(Button(column[17]-margin, row[0]+margin, column[18]-margin, row[2]-margin, &accentColor, DisplayOnly, nullptr));
+    //fullscreen panel
+    homeScreenButtons.push_back(Button(column[0]+margin, row[0]+margin, column[1]+margin, row[2]-margin, &accentColor, Clickable, fullScreenProgram));
+
+    //set panels
+    homeScreenButtons.push_back(Button(column[0]+margin/2, row[3]+margin/2, column[1], row[5]-margin/2, &accentColor, DisplayOnly, nullptr));
+    homeScreenButtons.push_back(Button(column[0]+margin/2, row[5]+margin/2, column[1], row[6]-margin/2, &accentColor, DisplayOnly, nullptr));
+    homeScreenButtons.push_back(Button(column[0]+margin/2, row[6]+margin/2, column[1], row[7]-margin/2, &accentColor, DisplayOnly, nullptr));
+    homeScreenButtons.push_back(Button(column[0]+margin/2, row[7]+margin/2, column[1], row[8]-margin/2, &accentColor, DisplayOnly, nullptr));
+    homeScreenButtons.push_back(Button(column[0]+margin/2, row[8]+margin/2, column[1], row[9]-margin/2, &accentColor, DisplayOnly, nullptr));
+    homeScreenButtons.push_back(Button(column[0]+margin/2, row[9]+margin/2, column[1], row[10]-margin/2, &accentColor, DisplayOnly, nullptr));
+    homeScreenButtons.push_back(Button(column[0]+margin/2, row[10]+margin/2, column[1], row[11]-margin/2, &accentColor, DisplayOnly, nullptr));
+    homeScreenButtons.push_back(Button(column[0]+margin/2, row[11]+margin/2, column[1], row[12]-margin/2, &accentColor, DisplayOnly, nullptr));
+    homeScreenButtons.push_back(Button(column[0]+margin/2, row[12]+margin/2, column[1], row[13]-margin/2, &accentColor, DisplayOnly, nullptr));
+    homeScreenButtons.push_back(Button(column[0]+margin/2, row[13]+margin/2, column[1], row[14]-margin/2, &accentColor, DisplayOnly, nullptr));
+    homeScreenButtons.push_back(Button(column[0]+margin/2, row[14]+margin/2, column[1], row[15]-margin/2, &accentColor, DisplayOnly, nullptr));
+
+
 
     //text editing buttons
     editScreenButtons.push_back(Button(70, 240, 350, 330, &accentColor, Clickable, discardInput));
     editScreenButtons.push_back(Button(450, 240, 730, 330, &accentColor, Clickable, saveInput));
-}
 
+
+}
+void createSphere() //create a unit sphere
+{
+    /*
+    one rotational side of a sphere with height detail 2: 
+
+               a
+              /\
+             /1 \
+          b /____\ c
+            |   /|
+            |2 / |
+            | / 3|
+          d |/___| e
+            \    /
+             \4 /
+              \/
+              f
+
+    triangles counter clockwise/right hand rule
+    used from prev:             vv    vv    vv
+                        1:abc 2:bcd 3:cde 4:def
+    used in next:          ^^    ^^    ^^   
+    the same pattern occurs for heights greater than 2
+
+    in the openGL coordinate system:
+    positive x points right
+    positive y points up
+    positive z points out of screen (toward user)
+    */
+    
+    //total vertices = 3*sphereHeightDetail*sphereRotationalDetail*2
+    //total triangles = sphereHeightDetail*sphereRotationalDetail*2
+    for (int i = 0; i < sphereRotationalDetail; ++i) //for each column/rotation/side of the sphere
+    {
+        //make triangle 1, so we can use it to build the others
+        //cout << "column start: " << i << endl;
+        //cout << "index: " << i*numberOfCoordinates/sphereRotationalDetail << endl;
+        //a
+        sphereVertices[i*numberOfCoordinates/sphereRotationalDetail] = cos(M_PI*2*i/sphereRotationalDetail)*sin(M_PI*0/(sphereHeightDetail+1)); //x
+        sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+1] = sin(M_PI*2*i/sphereRotationalDetail)*sin(M_PI*0/(sphereHeightDetail+1)); //y
+        sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+2] = cos(M_PI*0/(sphereHeightDetail+1)); //z
+        //cout << setprecision(2) << sphereVertices[i*numberOfCoordinates/sphereRotationalDetail] << " "
+        //    << sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+1] << " "
+        //    << sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+2] << " A " << endl;
+
+        //b
+        sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+3] = cos(M_PI*2*i/sphereRotationalDetail)*sin(M_PI*1/(sphereHeightDetail+1)); //x
+        sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+4] = sin(M_PI*2*i/sphereRotationalDetail)*sin(M_PI*1/(sphereHeightDetail+1)); //y
+        sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+5] = cos(M_PI*1/(sphereHeightDetail+1)); //z
+
+        //cout << "index: " << i*numberOfCoordinates/sphereRotationalDetail+3 << endl;
+        //cout << sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+3] << " "
+        //    << sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+4] << " "
+        //    << sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+5] << " B " << endl;
+
+        //c
+        sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+6] = cos(M_PI*2*(i+1)/sphereRotationalDetail)*sin(M_PI*1/(sphereHeightDetail+1)); //x
+        sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+7] = sin(M_PI*2*(i+1)/sphereRotationalDetail)*sin(M_PI*1/(sphereHeightDetail+1)); //y
+        sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+8] = cos(M_PI*1/(sphereHeightDetail+1)); //z
+
+        //cout << "index: " << i*numberOfCoordinates/sphereRotationalDetail+6 << endl;
+        //cout << sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+6] << " "
+        //    << sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+7] << " "
+        //    << sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+8] << " C " << endl << endl;
+
+        for (int j = 1; j < sphereHeightDetail*2; ++j) //for each triangle within the column, besides the first
+        {
+            sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9] = sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+(j-1)*9+3]; //x from previous triangle
+            sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+1] = sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+(j-1)*9+4]; //y from previous triangle
+            sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+2] = sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+(j-1)*9+5]; //z from previous triangle
+
+            //cout << "index: " << i*numberOfCoordinates/sphereRotationalDetail+j*9 << " taking from index: " << i*numberOfCoordinates/sphereRotationalDetail+(j-1)*9+3 << endl;
+            //cout << sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9] << " "
+            //<< sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+1] << " "
+            //<< sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+2] << " a " << endl;
+
+            sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+3] = sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+(j-1)*9+6]; //x from previous triangle
+            sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+4] = sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+(j-1)*9+7]; //y from previous triangle
+            sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+5] = sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+(j-1)*9+8]; //z from previous triangle
+            
+            //cout << "index: " << i*numberOfCoordinates/sphereRotationalDetail+j*9+3  << " taking from index: " << i*numberOfCoordinates/sphereRotationalDetail+(j-1)*9+6 << endl;
+            //cout << sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+3] << " "
+            //<< sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+4] << " "
+            //<< sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+5] << " b " << endl;
+
+            if (j % 2 == 0) //if the next triangle vertice to make is to finish a square, make sure it is generated with the right hand rule
+            {
+                cout << "odd num" << endl;
+                sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+6] = cos(M_PI*2*(i+1)/sphereRotationalDetail)*sin(M_PI*(int((j+2)/2))/(sphereHeightDetail+1)); //new x
+                sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+7] = sin(M_PI*2*(i+1)/sphereRotationalDetail)*sin(M_PI*(int((j+2)/2))/(sphereHeightDetail+1)); //new y
+                sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+8] = cos(M_PI*(int((j+2)/2))/(sphereHeightDetail+1)); //new z
+            }
+            else 
+            {
+                sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+6] = cos(M_PI*2*i/sphereRotationalDetail)*sin(M_PI*(int((j+1)/2)+1)/(sphereHeightDetail+1)); //new x
+                sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+7] = sin(M_PI*2*i/sphereRotationalDetail)*sin(M_PI*(int((j+1)/2)+1)/(sphereHeightDetail+1)); //new y
+                sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+8] = cos(M_PI*(int((j+1)/2)+1)/(sphereHeightDetail+1)); //new z
+            }
+
+            //cout << "index: " << i*numberOfCoordinates/sphereRotationalDetail+j*9+6 << endl;
+            //cout << sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+6] << " "
+            //<< sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+7] << " "
+            //<< sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+8] << " c " << endl << endl;
+        }
+    }
+}
+void initColumnsAndRows()
+{
+    for (int i = 0; i <= columns; ++i)
+    {
+        column[i] = i*WINDOW_WIDTH/columns;
+    }
+
+    for (int i = 0; i <= rows; ++i)
+    {
+        row[i] = i*WINDOW_HEIGHT/rows;
+    }
+}
 
 
 void stateToEditTeam1()
@@ -496,6 +817,9 @@ void stateToHomeScreen()
 {
     programState = HomeScreen;
 }
+
+
+
 void saveInput()
 {
     switch(programState)
@@ -599,6 +923,19 @@ void discardSet()
     resetScore();
 } 
 
+void fullScreenProgram()
+{
+    fullScreen = !fullScreen;
+    if (fullScreen)
+    {
+        glutFullScreen();
+    }
+    else
+    {
+        glutReshapeWindow(WINDOW_WIDTH, WINDOW_HEIGHT); 
+        glutPositionWindow(300, 100);
+    }
+}
 
 
 
