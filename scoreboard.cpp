@@ -1,23 +1,29 @@
+//0,0 is top left corner
+
+
+
+
+
 //things to do or think about
 /*
-glutFullScreen
-game time, actual time
-scores for each team and the set number
-past set scores
-glutPostRedisplay(); //after any visual variable change or sequence of changes
-clear all button
-glutGet(GLUT_SCREEN_WIDTH);
+    glutFullScreen
+    game time, actual time
+    scores for each team and the set number
+    past set scores
+    glutPostRedisplay(); //after any visual variable change or sequence of changes
+    clear all button
+    glutGet(GLUT_SCREEN_WIDTH);
 
-for the settings window glutCreateSubWindow(frameWin,FRAME_W,FRAME_H,canW,canH);
-take a look at this https://stackoverflow.com/questions/22545934/glut-initialisation-function
+    for the settings window glutCreateSubWindow(frameWin,FRAME_W,FRAME_H,canW,canH);
+    take a look at this https://stackoverflow.com/questions/22545934/glut-initialisation-function
 
-glut documentation https://www.opengl.org/resources/libraries/glut/spec3/spec3.html
+    glut documentation https://www.opengl.org/resources/libraries/glut/spec3/spec3.html
 */
 
 /*
-TODO:
-change team colors
-make buttons positions depend on initial screen size or set positions, make it easier to move them in bulk
+    TODO:
+    change team colors
+    make buttons positions depend on initial screen size or set positions, make it easier to move them in bulk
 
 */
 
@@ -25,17 +31,17 @@ make buttons positions depend on initial screen size or set positions, make it e
 
 
 /*
-how set storage and navigation might work
-resetScore sets both score values to 0, but does not change anything else about the set
-discardSet removes the set from the list and the displayed set changes to the next lowest populated item in the list
-    if no sets exist, create a new default set at set value 1 (index 0) and displays it
-resetSets wipes all sets data and creates a default set at value 1 and displays it
-saveSet pauses the timer, creates a new set with the same team names and colors at the next index if available, and displays the new set
-loadSet loads the colors, team names, and score data of a selected set
+    how set storage and navigation might work
+    resetScore sets both score values to 0, but does not change anything else about the set
+    discardSet removes the set from the list and the displayed set changes to the next lowest populated item in the list
+        if no sets exist, create a new default set at set value 1 (index 0) and displays it
+    resetSets wipes all sets data and creates a default set at value 1 and displays it
+    saveSet pauses the timer, creates a new set with the same team names and colors at the next index if available, and displays the new set
+    loadSet loads the colors, team names, and score data of a selected set
 
-need to do:
-clarify the discard set button so that users are not easily confused about the function or purpose of it
-make function names align with button labels to avoid confusion for other programmers
+    need to do:
+    clarify the discard set button so that users are not easily confused about the function or purpose of it
+    make function names align with button labels to avoid confusion for other programmers
 */
 
 #define _USE_MATH_DEFINES
@@ -72,7 +78,6 @@ int margin = WINDOW_WIDTH/160;
 
 bool fullScreen = false;
 
-
 //OpenGL and GLUT setup functions
 void displayCB();
 void mouseCB(int button, int state, int mousex, int mousey);
@@ -104,7 +109,7 @@ int textBoxIndex = 0;
 unsigned int setNumber = 1;
 unsigned int setToLoad = 1;
 
-const int sphereHeightDetail = 15; //number of vertices between top and bottom of sphere
+const int sphereHeightDetail = 20; //number of vertices between top and bottom of sphere
 const int sphereRotationalDetail = 30; //number of vertices around the sides
 const int numberOfTriangles = sphereHeightDetail*sphereRotationalDetail*2;
 const int numberOfVertices = 3*numberOfTriangles;
@@ -265,7 +270,7 @@ void displayHomeScreen()
     drawString(column[11]+margin*3, row[14]+margin*2-2, 25, minus, Bold);
     drawString(column[14]+margin*3, row[14]+margin*2-2, 25, plus, Bold);
     
-    drawBall(40, 50, 50, ballRotX, ballRotY, ballRotZ, 0);
+    drawBall(column[9], row[5]-margin*2.65, 165, ballRotX, ballRotY, ballRotZ, 0);
 
     glutSwapBuffers();
 
@@ -421,6 +426,9 @@ void motionCB(int posx, int posy)
 void drawButton(float startx, float starty, float endx, float endy, Color &color)
 {
     glPushMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     glColor3f(color.r, color.g, color.b);
     glTranslatef(-1,1,0);
@@ -437,6 +445,10 @@ void drawButton(float startx, float starty, float endx, float endy, Color &color
 void drawButton(Button &button)
 {
     glPushMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    
+    glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     //change button color when hovered over or clicked on
     if (button.over(mousePositionX * mouseScaleX, mousePositionY * mouseScaleY) && (button.purpose == Hoverable || button.purpose == Clickable))
@@ -467,6 +479,10 @@ void drawString(float posx, float posy, float size, char * str, FontStyle style)
         for (double j = 0; j <= style%3; j+=0.2)
         {
             glPushMatrix();
+            glMatrixMode(GL_PROJECTION);
+            glLoadIdentity();
+    
+            glMatrixMode(GL_MODELVIEW);
             glLoadIdentity();
             glTranslatef((posx + i - WINDOW_WIDTH/2.0)/(WINDOW_WIDTH/2.0), (WINDOW_HEIGHT/2.0 - posy - j)/(WINDOW_HEIGHT/2.0), 0.0f);
             glScalef(size/70000.0f, size/31000.0f, 1.0f);
@@ -484,6 +500,11 @@ void drawString(float posx, float posy, float size, char * str, FontStyle style)
 void drawGrid()
 {
     glPushMatrix();
+
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    
+    glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
     glColor3f(0.95, 0.95, 0.3);
@@ -507,50 +528,37 @@ void drawGrid()
 
 void drawBall(int x, int y, float size, float rotx, float roty, float rotz, int texture)
 {
+    size = size * 0.4; //convert pixel size to coordinate system
+    cout << x << " " << y << endl;
+    cout << WINDOW_WIDTH << " " << WINDOW_HEIGHT << endl;
+
     glPushMatrix();
-
-    
-    //glOrtho(-(WINDOW_WIDTH) / 2, (WINDOW_WIDTH) / 2, (WINDOW_HEIGHT) / 2, -(WINDOW_HEIGHT) / 2, -100.0, 100.0);
-    
-
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(45.0f,1.0f*WINDOW_WIDTH/WINDOW_HEIGHT,1,1000);
-    //gluLookAt(0,0,1,0,0,0,0,1,0);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
+    glEnable(GL_TEXTURE_2D);
     
-    
-
-    x = 480;
-    y = 300;
-    size = 20;
-
-    //glColor3f(0.95, 0.95, 0.3);
-    
-    //glTranslatef(-1,1,0);
-    glTranslatef(-0.5,0.5,-5);
-    //glRotatef(ballRotX, 1.0f, 0.0f, 0.0f);
-    //++ballRotX;
+    glTranslatef((1.0f*x - WINDOW_WIDTH/2.0f)/WINDOW_WIDTH*2, -(1.0f*y - WINDOW_HEIGHT/2.0f)/WINDOW_HEIGHT*2, -2.0f); //from center
+    glRotatef(ballRotX, 1.0f, 0.0f, 0.0f);
+    ballRotX += 3;
     glRotatef(ballRotY, 0.0f, 1.0f, 0.0f);
-    ++ballRotY;
+    ballRotY += 2;
     glRotatef(ballRotZ, 0.0f, 0.0f, 1.0f);
     ++ballRotZ;
-    //glScalef(2.0f/(WINDOW_WIDTH)*size, 2.0f/(WINDOW_HEIGHT)*size, 1.0f*size);
-    //glScalef(size, size, size);
-    //glTranslatef(x,y,0);
+    glScalef(2.0f/(WINDOW_WIDTH)*size, 2.0f/(WINDOW_WIDTH)*size, 2.0f/(WINDOW_WIDTH)*size);
     
-
     
     glBegin(GL_TRIANGLES);
         for (int i = 0; i < numberOfVertices; ++i)
         {
             glColor3f(1.0*i/numberOfVertices, 1.0*(numberOfVertices-i)/numberOfVertices, 1.0*i/numberOfVertices);
-            glVertex3f(sphereVertices[i*3], sphereVertices[i*3+1], sphereVertices[i*3+2]);
+            glVertex3f(sphereVertices[i*3], sphereVertices[i*3+1], sphereVertices[i*3+2]); 
         }
 
         /*
@@ -562,7 +570,7 @@ void drawBall(int x, int y, float size, float rotx, float roty, float rotz, int 
         */
 
         /*
-        //test cube
+        //test cube (quads)
         glColor3f(1.0,0.0,0.0);
         glVertex3f(-1.0,1.0,1.0);
         glVertex3f(-1.0,-1.0,1.0);
@@ -601,6 +609,7 @@ void drawBall(int x, int y, float size, float rotx, float roty, float rotz, int 
         */
     glEnd();
     glDisable(GL_DEPTH_TEST);
+    glDisable(GL_TEXTURE_2D);
     glPopMatrix();
 
     
@@ -768,7 +777,7 @@ void createSphere() //create a unit sphere
 
             if (j % 2 == 0) //if the next triangle vertice to make is to finish a square, make sure it is generated with the right hand rule
             {
-                cout << "odd num" << endl;
+                //cout << "odd num" << endl;
                 sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+6] = cos(M_PI*2*(i+1)/sphereRotationalDetail)*sin(M_PI*(int((j+2)/2))/(sphereHeightDetail+1)); //new x
                 sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+7] = sin(M_PI*2*(i+1)/sphereRotationalDetail)*sin(M_PI*(int((j+2)/2))/(sphereHeightDetail+1)); //new y
                 sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+8] = cos(M_PI*(int((j+2)/2))/(sphereHeightDetail+1)); //new z

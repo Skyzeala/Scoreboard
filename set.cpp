@@ -160,7 +160,6 @@ int Set::getScore2()
 {
     return score2;
 }
-
 void Set::getTeam1Name(char * name)
 {
     strcpy(name, team1Name);
@@ -169,7 +168,6 @@ void Set::getTeam2Name(char * name)
 {
     strcpy(name, team2Name);
 }
-
 Color Set::getBgColor()
 {
     return bgColor;
@@ -215,6 +213,7 @@ Color Set::getTeam2Color()
     return team2Color;
 }
 
+
 void Set::setSetNumber(int setNum)
 {
     if (setNumber > GAME_MAX || setNumber < 1)
@@ -230,7 +229,6 @@ void Set::setScore2(int score)
 {
     score2 = score;
 }
-
 void Set::setTeam1Name(const char * name)
 {
     strcpy(team1Name, name);
@@ -239,9 +237,6 @@ void Set::setTeam2Name(const char * name)
 {
     strcpy(team2Name, name);
 }
-
-
-
 void Set::setBgColor(const Color &color)//oops, need color arg
 {
     bgColor = color;
