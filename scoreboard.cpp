@@ -70,6 +70,7 @@ using namespace std;
 int WINDOW_WIDTH = 960;
 int WINDOW_HEIGHT = 540;
 
+//create a grid for easily lining up elements on screen
 const int columns = 18;
 const int rows = 18;
 int column[columns+1];
@@ -110,11 +111,13 @@ unsigned int setNumber = 1;
 unsigned int setToLoad = 1;
 
 const int sphereHeightDetail = 20; //number of vertices between top and bottom of sphere
-const int sphereRotationalDetail = 30; //number of vertices around the sides
+const int sphereRotationalDetail = 40; //number of vertices around the sides
 const int numberOfTriangles = sphereHeightDetail*sphereRotationalDetail*2;
 const int numberOfVertices = 3*numberOfTriangles;
 const int numberOfCoordinates = 3*numberOfVertices;
 GLfloat sphereVertices[numberOfCoordinates]; //x and y and z coordinates for each triangle point
+GLfloat sphereTextureCoordinates[numberOfCoordinates];
+//ballTexture = "file.bmp";
 int ballRotX = 0;
 int ballRotY = 0;
 int ballRotZ = 0;
@@ -300,19 +303,19 @@ void displayTextBox()
     game[setNumber - 1].paintBg();
 
     game[setNumber - 1].useTextColor();
-    drawString(235, 50, 30, editing, Bold);
+    drawString(190, 50, 30, editing, Bold);
     if (programState == EditTeam1)
     {
-        drawString(375, 50, 30, team, Bold);
+        drawString(360, 50, 30, team, Bold);
         drawString(465, 50, 30, team1Name, Bold);
     }
     else if (programState == EditTeam2)
     {
-        drawString(375, 50, 30, team, Bold);
+        drawString(360, 50, 30, team, Bold);
         drawString(465, 50, 30, team2Name, Bold);
     }
     else if (programState == EditSetNum)
-        drawString(375, 50, 30, setNum, Bold);
+        drawString(360, 50, 30, setNum, Bold);
 
     //draw box for text to be entered into
     drawButton(15, 100, 785, 200, accentColor);
@@ -322,17 +325,17 @@ void displayTextBox()
     drawString(21, 165, 42, inputString, Bold);
 
     //text box underscores for user input spaces
-    drawString(25, 180, 21, underscores, Regular);
-    drawString(31, 180, 21, underscores, Regular);
-    drawString(402, 180, 21, underscores, Regular);
-    drawString(408, 180, 21, underscores, Regular);
+    drawString(27, 177, 21, underscores, Regular);
+    drawString(35, 177, 21, underscores, Regular);
+    drawString(331, 177, 21, underscores, Regular);
+    drawString(338, 177, 21, underscores, Regular);
 
     //highlight current index
     if (programState == EditTeam1)
         glColor3f(team1Color.r, team1Color.g, team1Color.b);
     else if (programState == EditTeam2)
         glColor3f(team2Color.r, team2Color.g, team2Color.b);
-    drawString(25.13*(textBoxIndex + 1), 177, 33, underscore, Bold);
+    drawString(30.2*(textBoxIndex + 1)-6, 172, 36, underscore, Bold);
 
     //draw discard and save buttons
     for (unsigned int i = 0; i < editScreenButtons.size(); i++)
@@ -550,14 +553,18 @@ void drawBall(int x, int y, float size, float rotx, float roty, float rotz, int 
     glRotatef(ballRotY, 0.0f, 1.0f, 0.0f);
     ballRotY += 2;
     glRotatef(ballRotZ, 0.0f, 0.0f, 1.0f);
-    ++ballRotZ;
+    ballRotZ += 1;
     glScalef(2.0f/(WINDOW_WIDTH)*size, 2.0f/(WINDOW_WIDTH)*size, 2.0f/(WINDOW_WIDTH)*size);
     
-    
+    //glBindTexture(GL_TEXTURE_2D, ballTexture);
+
     glBegin(GL_TRIANGLES);
         for (int i = 0; i < numberOfVertices; ++i)
         {
             glColor3f(1.0*i/numberOfVertices, 1.0*(numberOfVertices-i)/numberOfVertices, 1.0*i/numberOfVertices);
+            
+            //glTexCoord2f(sphereTextureCoordinates[i*3], sphereTextureCoordinates[i*3+1]);
+            
             glVertex3f(sphereVertices[i*3], sphereVertices[i*3+1], sphereVertices[i*3+2]); 
         }
 
@@ -611,12 +618,7 @@ void drawBall(int x, int y, float size, float rotx, float roty, float rotz, int 
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_TEXTURE_2D);
     glPopMatrix();
-
-    
-
-
 }
-
 
 void reshapeCanvas(int w, int h)
 {
@@ -682,14 +684,12 @@ void createButtons()
     homeScreenButtons.push_back(Button(column[0]+margin/2, row[13]+margin/2, column[1], row[14]-margin/2, &accentColor, DisplayOnly, nullptr));
     homeScreenButtons.push_back(Button(column[0]+margin/2, row[14]+margin/2, column[1], row[15]-margin/2, &accentColor, DisplayOnly, nullptr));
 
-
-
     //text editing buttons
     editScreenButtons.push_back(Button(70, 240, 350, 330, &accentColor, Clickable, discardInput));
     editScreenButtons.push_back(Button(450, 240, 730, 330, &accentColor, Clickable, saveInput));
 
-
 }
+
 void createSphere() //create a unit sphere
 {
     /*
@@ -735,6 +735,9 @@ void createSphere() //create a unit sphere
         //    << sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+1] << " "
         //    << sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+2] << " A " << endl;
 
+        //sphereTextureCoordinates[i*numberOfCoordinates/sphereRotationalDetail] = (float)i/sphereRotationalDetail;
+        //sphereTextureCoordinates[i*numberOfCoordinates/sphereRotationalDetail+1] = (float)0/(sphereHeightDetail+1);
+
         //b
         sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+3] = cos(M_PI*2*i/sphereRotationalDetail)*sin(M_PI*1/(sphereHeightDetail+1)); //x
         sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+4] = sin(M_PI*2*i/sphereRotationalDetail)*sin(M_PI*1/(sphereHeightDetail+1)); //y
@@ -745,6 +748,9 @@ void createSphere() //create a unit sphere
         //    << sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+4] << " "
         //    << sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+5] << " B " << endl;
 
+        //sphereTextureCoordinates[i*numberOfCoordinates/sphereRotationalDetail+2] = (float)i/sphereRotationalDetail;
+        //sphereTextureCoordinates[i*numberOfCoordinates/sphereRotationalDetail+3] = (float)0/(sphereHeightDetail+1);
+
         //c
         sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+6] = cos(M_PI*2*(i+1)/sphereRotationalDetail)*sin(M_PI*1/(sphereHeightDetail+1)); //x
         sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+7] = sin(M_PI*2*(i+1)/sphereRotationalDetail)*sin(M_PI*1/(sphereHeightDetail+1)); //y
@@ -754,6 +760,9 @@ void createSphere() //create a unit sphere
         //cout << sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+6] << " "
         //    << sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+7] << " "
         //    << sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+8] << " C " << endl << endl;
+
+        //sphereTextureCoordinates[i*numberOfCoordinates/sphereRotationalDetail+4] = (float)i/sphereRotationalDetail;
+        //sphereTextureCoordinates[i*numberOfCoordinates/sphereRotationalDetail+5] = (float)0/(sphereHeightDetail+1);
 
         for (int j = 1; j < sphereHeightDetail*2; ++j) //for each triangle within the column, besides the first
         {
@@ -766,6 +775,9 @@ void createSphere() //create a unit sphere
             //<< sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+1] << " "
             //<< sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+2] << " a " << endl;
 
+            //sphereTextureCoordinates[i*numberOfCoordinates/sphereRotationalDetail+j*6] = (float)i/sphereRotationalDetail;
+            //sphereTextureCoordinates[i*numberOfCoordinates/sphereRotationalDetail+j*6+1] = (float)j/(sphereHeightDetail+1);
+
             sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+3] = sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+(j-1)*9+6]; //x from previous triangle
             sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+4] = sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+(j-1)*9+7]; //y from previous triangle
             sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+5] = sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+(j-1)*9+8]; //z from previous triangle
@@ -774,6 +786,9 @@ void createSphere() //create a unit sphere
             //cout << sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+3] << " "
             //<< sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+4] << " "
             //<< sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+5] << " b " << endl;
+            
+            //sphereTextureCoordinates[i*numberOfCoordinates/sphereRotationalDetail+j*6+2] = (float)i/sphereRotationalDetail;
+            //sphereTextureCoordinates[i*numberOfCoordinates/sphereRotationalDetail+j*6+3] = (float)j/(sphereHeightDetail+1);
 
             if (j % 2 == 0) //if the next triangle vertice to make is to finish a square, make sure it is generated with the right hand rule
             {
