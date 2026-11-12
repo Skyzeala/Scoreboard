@@ -1,8 +1,3 @@
-//0,0 is top left corner
-
-
-
-
 
 //things to do or think about
 /*
@@ -21,15 +16,11 @@
 /*
     TODO:
     custom team colors
-    texture map ball
     ball physics
     refactor code
     new set, store set, set saving conflict management
 
 */
-
-
-
 
 /*
     how set storage and navigation might work

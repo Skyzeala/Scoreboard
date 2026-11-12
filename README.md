@@ -9,28 +9,26 @@ You can find concept art for the interface design in concept_art.png which shows
 * OpenGL 4.4.0
 * freeGLUT
 * ctime
+* stb_image.h https://github.com/nothings/stb/blob/master/stb_image.h
 
-## Build instructions for Windows 10 using VSCode (unfinished)
+## Build instructions for Windows 10 using VSCode
 
-You will need MinGW and freeglut and then you must tell VSCode where to look for the libraries using a .vscode folder and subsequent files
+You will need MinGW and freeglut and then you must tell VSCode where to look for the libraries using a .vscode folder and subsequent files.
 
-To run the program, you can hit run in VSCode. To run the program without a debugger your path variable must include the address of the mingw bin folder.
-
-## Current and future features
+## Current features
 * Current time of day updated every second
 * Display scores between 00 and 99 for two teams
 * Draw boxes using pixel coordinates
-* Print text on the screen that is realistically sized
+* Print text on the screen for team names and buttons
 * Buttons to add or subtract a point from each team's score
-* Team names can be edited in a GUI
-* Set number can be edited in a GUI
+* Team names can be edited
+* Set number can be edited
 * Window can be resized to users needs
-* Store and display past saved set scores and data
-* Display and manage a stopwatch for the game's time
-* A settings page to allow a user to change team colors, text color, and background color
+* Window can be full screen or windowed
+* Sphere with a volleyball texture displayes and rotates
 
 ## Screenshots
-![screenshot](https://github.com/Skyzeala/Scoreboard/blob/main/screenshotMainMenuDefault.png)
+![screenshot](https://github.com/Skyzeala/Scoreboard/blob/main/ScreenshotMainMenu.png)
 
 ## Sources and attributions:
 * Thank you to Lighthouse3d for the introductive tutorials to help me check my framework setup.
