@@ -6,9 +6,7 @@
 
 //things to do or think about
 /*
-    glutFullScreen
-    game time, actual time
-    scores for each team and the set number
+    game time, pause, play
     past set scores
     glutPostRedisplay(); //after any visual variable change or sequence of changes
     clear all button
@@ -22,8 +20,11 @@
 
 /*
     TODO:
-    change team colors
-    make buttons positions depend on initial screen size or set positions, make it easier to move them in bulk
+    custom team colors
+    texture map ball
+    ball physics
+    refactor code
+    new set, store set, set saving conflict management
 
 */
 
@@ -61,6 +62,9 @@
 #else
 #include <GL/freeglut.h>
 #endif
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 
 
@@ -117,7 +121,7 @@ const int numberOfVertices = 3*numberOfTriangles;
 const int numberOfCoordinates = 3*numberOfVertices;
 GLfloat sphereVertices[numberOfCoordinates]; //x and y and z coordinates for each triangle point
 GLfloat sphereTextureCoordinates[numberOfCoordinates];
-//ballTexture = "file.bmp";
+unsigned int ballTexture;
 int ballRotX = 0;
 int ballRotY = 0;
 int ballRotZ = 0;
@@ -151,7 +155,7 @@ void decrementScore1();
 void decrementScore2();
 void resetScore();
 
-
+//state manipulation of the program
 void stateToEditTeam1();
 void stateToEditTeam2();
 void stateToEditSetNum();
@@ -171,8 +175,6 @@ int main(int argc, char *argv[])
     mouseScaleX = 1;
     mouseScaleY = 1;
     
-    init();
-
     glutInit(&argc, argv);          //initialize GLUT
     glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT); //make a window
     glutInitWindowPosition(300,100);
@@ -191,6 +193,8 @@ int main(int argc, char *argv[])
     glutKeyboardFunc(keyboardCB);
     glutTimerFunc(1000, timeCB, 0);
     glutPassiveMotionFunc(motionCB);
+    
+    init();
     
     glutMainLoop();
 
@@ -273,7 +277,7 @@ void displayHomeScreen()
     drawString(column[11]+margin*3, row[14]+margin*2-2, 25, minus, Bold);
     drawString(column[14]+margin*3, row[14]+margin*2-2, 25, plus, Bold);
     
-    drawBall(column[9], row[5]-margin*2.65, 165, ballRotX, ballRotY, ballRotZ, 0);
+    drawBall(column[9], row[5]-margin*2.65, 165, ballRotX, ballRotY, ballRotZ, ballTexture);
 
     glutSwapBuffers();
 
@@ -546,6 +550,7 @@ void drawBall(int x, int y, float size, float rotx, float roty, float rotz, int 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     glEnable(GL_TEXTURE_2D);
+    glDisable(GL_LIGHTING);
     
     glTranslatef((1.0f*x - WINDOW_WIDTH/2.0f)/WINDOW_WIDTH*2, -(1.0f*y - WINDOW_HEIGHT/2.0f)/WINDOW_HEIGHT*2, -2.0f); //from center
     glRotatef(ballRotX, 1.0f, 0.0f, 0.0f);
@@ -556,14 +561,15 @@ void drawBall(int x, int y, float size, float rotx, float roty, float rotz, int 
     ballRotZ += 1;
     glScalef(2.0f/(WINDOW_WIDTH)*size, 2.0f/(WINDOW_WIDTH)*size, 2.0f/(WINDOW_WIDTH)*size);
     
-    //glBindTexture(GL_TEXTURE_2D, ballTexture);
+    glBindTexture(GL_TEXTURE_2D, texture);
 
     glBegin(GL_TRIANGLES);
         for (int i = 0; i < numberOfVertices; ++i)
         {
-            glColor3f(1.0*i/numberOfVertices, 1.0*(numberOfVertices-i)/numberOfVertices, 1.0*i/numberOfVertices);
+            glColor3f(0.95f, 0.95f, 0.95f);
+            //glColor3f(sphereTextureCoordinates[i*2], sphereTextureCoordinates[i*2+1], 0.0f);
             
-            //glTexCoord2f(sphereTextureCoordinates[i*3], sphereTextureCoordinates[i*3+1]);
+            glTexCoord2f(sphereTextureCoordinates[i*2], sphereTextureCoordinates[i*2+1]);
             
             glVertex3f(sphereVertices[i*3], sphereVertices[i*3+1], sphereVertices[i*3+2]); 
         }
@@ -630,7 +636,6 @@ void reshapeCanvas(int w, int h)
 
 void init()
 {
-    
     initColumnsAndRows();
     createButtons();
     loadSet();
@@ -722,6 +727,29 @@ void createSphere() //create a unit sphere
     
     //total vertices = 3*sphereHeightDetail*sphereRotationalDetail*2
     //total triangles = sphereHeightDetail*sphereRotationalDetail*2
+
+    
+    glGenTextures(1, &ballTexture);
+    glBindTexture(GL_TEXTURE_2D, ballTexture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    int texWidth, texHeight, texnrChannels;
+    unsigned char *data = stbi_load("Textures/volleyball_thickened.jpg", &texWidth, &texHeight, &texnrChannels, 0);
+
+    if (data)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texWidth, texHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    }
+    else
+    {
+        cout << "Failed to load texture" << endl;
+    }
+    stbi_image_free(data);
+
+
     for (int i = 0; i < sphereRotationalDetail; ++i) //for each column/rotation/side of the sphere
     {
         //make triangle 1, so we can use it to build the others
@@ -804,10 +832,26 @@ void createSphere() //create a unit sphere
                 sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+8] = cos(M_PI*(int((j+1)/2)+1)/(sphereHeightDetail+1)); //new z
             }
 
+            //sphereTextureCoordinates[i*numberOfCoordinates/sphereRotationalDetail+j*6+4] = (float)i/sphereRotationalDetail;
+            //sphereTextureCoordinates[i*numberOfCoordinates/sphereRotationalDetail+j*6+5] = (float)j/(sphereHeightDetail+1);
+
             //cout << "index: " << i*numberOfCoordinates/sphereRotationalDetail+j*9+6 << endl;
             //cout << sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+6] << " "
             //<< sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+7] << " "
             //<< sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+8] << " c " << endl << endl;
+        }
+        for (int j = 0; j < sphereHeightDetail*2; ++j)
+        {
+            for (int k = 0; k < 3; ++k)
+            {
+                int m = j + k;
+                int col = (m == 0 || m % 2 == 1) ? i : i + 1;
+                int lat = (m == 0) ? 0 : (m + 1) / 2;
+
+                int idx = (i * sphereHeightDetail * 2 * 3 + j * 3 + k) * 2;
+                sphereTextureCoordinates[idx]     = (float)col / sphereRotationalDetail; // u
+                sphereTextureCoordinates[idx + 1] = (float)lat / (sphereHeightDetail + 1); // v
+            }
         }
     }
 }
