@@ -34,6 +34,8 @@ You will need MinGW and freeglut and then you must tell VSCode where to look for
 * Thank you to Lighthouse3d for the introductive tutorials to help me check my framework setup.
 * I used some of the code from this tutorial:
 * http://www.lighthouse3d.com/tutorials/glut-tutorial/preparing-the-window-for-a-reshape/
+* And from the glut documentation 
+* https://www.opengl.org/resources/libraries/glut/spec3/spec3.html
 
 * Also a thank you to this tutorial for various glut things like fullscreen mode
 * https://www3.ntu.edu.sg/home/ehchua/programming/opengl/cg_introduction.html
@@ -43,6 +45,7 @@ You will need MinGW and freeglut and then you must tell VSCode where to look for
 * https://stackoverflow.com/questions/24872986/error-a-pointer-to-a-bound-function-may-only-be-used-to-call-the-function
 * https://stackoverflow.com/questions/3032386/glgenbuffers-not-defined
 * https://stackoverflow.com/questions/19102180/how-does-gldrawarrays-know-what-to-draw
+* https://stackoverflow.com/questions/22545934/glut-initialisation-function
 
 
 

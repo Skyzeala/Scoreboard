@@ -1,18 +1,4 @@
 
-//things to do or think about
-/*
-    game time, pause, play
-    past set scores
-    glutPostRedisplay(); //after any visual variable change or sequence of changes
-    clear all button
-    glutGet(GLUT_SCREEN_WIDTH);
-
-    for the settings window glutCreateSubWindow(frameWin,FRAME_W,FRAME_H,canW,canH);
-    take a look at this https://stackoverflow.com/questions/22545934/glut-initialisation-function
-
-    glut documentation https://www.opengl.org/resources/libraries/glut/spec3/spec3.html
-*/
-
 /*
     TODO:
     custom team colors
@@ -31,32 +17,19 @@
     saveSet pauses the timer, creates a new set with the same team names and colors at the next index if available, and displays the new set
     loadSet loads the colors, team names, and score data of a selected set
 
-    need to do:
-    clarify the discard set button so that users are not easily confused about the function or purpose of it
-    make function names align with button labels to avoid confusion for other programmers
 */
 
-#define _USE_MATH_DEFINES
 #define GLUT_BUILDING_LIB
 #define GL_GLEXT_PROTOTYPES
 
 #include "utilities.h"
 #include "interface.h"
 #include "set.h"
+#include "sphere.h"
 
 #include <ctime>
 #include <vector>
 #include <cmath>
-
-#ifdef __APPLE__
-#include <GLUT/glut.h>
-#else
-#include <GL/freeglut.h>
-#endif
-
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
-
 
 
 using namespace std;
@@ -105,26 +78,14 @@ int textBoxIndex = 0;
 unsigned int setNumber = 1;
 unsigned int setToLoad = 1;
 
-const int sphereHeightDetail = 20; //number of vertices between top and bottom of sphere
-const int sphereRotationalDetail = 40; //number of vertices around the sides
-const int numberOfTriangles = sphereHeightDetail*sphereRotationalDetail*2;
-const int numberOfVertices = 3*numberOfTriangles;
-const int numberOfCoordinates = 3*numberOfVertices;
-GLfloat sphereVertices[numberOfCoordinates]; //x and y and z coordinates for each triangle point
-GLfloat sphereTextureCoordinates[numberOfCoordinates];
-unsigned int ballTexture;
-int ballRotX = 0;
-int ballRotY = 0;
-int ballRotZ = 0;
-int ballRotVelocityX = 0;
-int ballRotVelocityY = 0;
-int ballRotVelocityZ = 0;
+Sphere gameBall;
+
+
 
 //initialize the scoreboard for first use, set up the first Set object
 void init();
 //init functions
 void createButtons();
-void createSphere();
 void initColumnsAndRows();
 
 //visual program state screens
@@ -137,7 +98,6 @@ void drawString(float posx, float posy, float size, char * str, FontStyle style)
 void drawButton(float startx, float starty, float endx, float endy, Color &color);
 void drawButton(Button &button);
 void drawGrid();
-void drawBall(int x, int y, float size, float rotx, float roty, float rotz, int texture);
 
 //button action functions, calls set functions
 void incrementScore1();
@@ -194,7 +154,6 @@ int main(int argc, char *argv[])
 
     return 0;
 }
-
 
 void displayCB()
 {
@@ -268,7 +227,7 @@ void displayHomeScreen()
     drawString(column[11]+margin*3, row[14]+margin*2-2, 25, minus, Bold);
     drawString(column[14]+margin*3, row[14]+margin*2-2, 25, plus, Bold);
     
-    drawBall(column[9], row[5]-margin*2.65, 165, ballRotX, ballRotY, ballRotZ, ballTexture);
+    gameBall.drawSphere(column[9], row[5]-margin*2.65, 165, WINDOW_WIDTH, WINDOW_HEIGHT);
 
     glutSwapBuffers();
 
@@ -279,7 +238,6 @@ void displaySettings()
     char str[STRING_MAX] = "not implemented";
     drawString(50,50, 20, str, Italic);
 }
-
 
 void displayTextBox()
 {
@@ -524,98 +482,7 @@ void drawGrid()
     glPopMatrix();
 }
 
-void drawBall(int x, int y, float size, float rotx, float roty, float rotz, int texture)
-{
-    size = size * 0.4; //convert pixel size to coordinate system
-    cout << x << " " << y << endl;
-    cout << WINDOW_WIDTH << " " << WINDOW_HEIGHT << endl;
 
-    glPushMatrix();
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluPerspective(45.0f,1.0f*WINDOW_WIDTH/WINDOW_HEIGHT,1,1000);
-
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
-    glEnable(GL_TEXTURE_2D);
-    glDisable(GL_LIGHTING);
-    
-    glTranslatef((1.0f*x - WINDOW_WIDTH/2.0f)/WINDOW_WIDTH*2, -(1.0f*y - WINDOW_HEIGHT/2.0f)/WINDOW_HEIGHT*2, -2.0f); //from center
-    glRotatef(ballRotX, 1.0f, 0.0f, 0.0f);
-    ballRotX += 3;
-    glRotatef(ballRotY, 0.0f, 1.0f, 0.0f);
-    ballRotY += 2;
-    glRotatef(ballRotZ, 0.0f, 0.0f, 1.0f);
-    ballRotZ += 1;
-    glScalef(2.0f/(WINDOW_WIDTH)*size, 2.0f/(WINDOW_WIDTH)*size, 2.0f/(WINDOW_WIDTH)*size);
-    
-    glBindTexture(GL_TEXTURE_2D, texture);
-
-    glBegin(GL_TRIANGLES);
-        for (int i = 0; i < numberOfVertices; ++i)
-        {
-            glColor3f(0.95f, 0.95f, 0.95f);
-            //glColor3f(sphereTextureCoordinates[i*2], sphereTextureCoordinates[i*2+1], 0.0f);
-            
-            glTexCoord2f(sphereTextureCoordinates[i*2], sphereTextureCoordinates[i*2+1]);
-            
-            glVertex3f(sphereVertices[i*3], sphereVertices[i*3+1], sphereVertices[i*3+2]); 
-        }
-
-        /*
-        //test triangle
-        glColor3f(1,0.1,0.1);
-        glVertex3f(0, 50, 0);
-        glVertex3f(-33, 80, 0);
-        glVertex3f(33, 80, 0);
-        */
-
-        /*
-        //test cube (quads)
-        glColor3f(1.0,0.0,0.0);
-        glVertex3f(-1.0,1.0,1.0);
-        glVertex3f(-1.0,-1.0,1.0);
-        glVertex3f(1.0,-1.0,1.0);
-        glVertex3f(1.0,1.0,1.0);
-        //back
-        glColor3f(0.0,1.0,0.0);
-        glVertex3f(1.0,1.0,-1.0);
-        glVertex3f(1.0,-1.0,-1.0);
-        glVertex3f(-1.0,-1.0,-1.0);
-        glVertex3f(-1.0,1.0,-1.0);
-        //right
-        glColor3f(0.0,0.0,1.0);
-        glVertex3f(1.0,1.0,1.0);
-        glVertex3f(1.0,-1.0,1.0);
-        glVertex3f(1.0,-1.0,-1.0);
-        glVertex3f(1.0,1.0,-1.0);
-        //left
-        glColor3f(1.0,1.0,0.0);
-        glVertex3f(-1.0,1.0,-1.0);
-        glVertex3f(-1.0,-1.0,-1.0);
-        glVertex3f(-1.0,-1.0,1.0);
-        glVertex3f(-1.0,1.0,1.0);
-        //top
-        glColor3f(0.0,1.0,1.0);
-        glVertex3f(-1.0,1.0,-1.0);
-        glVertex3f(-1.0,1.0,1.0);
-        glVertex3f(1.0,1.0,1.0);
-        glVertex3f(1.0,1.0,-1.0);
-        //bottom
-        glColor3f(1.0,0.0,1.0);
-        glVertex3f(-1.0,-1.0,-1.0);
-        glVertex3f(-1.0,-1.0,1.0);
-        glVertex3f(1.0,-1.0,1.0);
-        glVertex3f(1.0,-1.0,-1.0);
-        */
-    glEnd();
-    glDisable(GL_DEPTH_TEST);
-    glDisable(GL_TEXTURE_2D);
-    glPopMatrix();
-}
 
 void reshapeCanvas(int w, int h)
 {
@@ -630,7 +497,7 @@ void init()
     initColumnsAndRows();
     createButtons();
     loadSet();
-    createSphere();
+    gameBall = Sphere();
 }
 
 void createButtons()
@@ -684,151 +551,6 @@ void createButtons()
     editScreenButtons.push_back(Button(70, 240, 350, 330, &accentColor, Clickable, discardInput));
     editScreenButtons.push_back(Button(450, 240, 730, 330, &accentColor, Clickable, saveInput));
 
-}
-
-void createSphere() //create a unit sphere
-{
-    /*
-    one rotational side of a sphere with height detail 2: 
-
-               a
-              /\
-             /1 \
-          b /____\ c
-            |   /|
-            |2 / |
-            | / 3|
-          d |/___| e
-            \    /
-             \4 /
-              \/
-              f
-
-    triangles counter clockwise/right hand rule
-    used from prev:             vv    vv    vv
-                        1:abc 2:bcd 3:cde 4:def
-    used in next:          ^^    ^^    ^^   
-    the same pattern occurs for heights greater than 2
-
-    in the openGL coordinate system:
-    positive x points right
-    positive y points up
-    positive z points out of screen (toward user)
-    */
-    
-    //total vertices = 3*sphereHeightDetail*sphereRotationalDetail*2
-    //total triangles = sphereHeightDetail*sphereRotationalDetail*2
-
-    
-    glGenTextures(1, &ballTexture);
-    glBindTexture(GL_TEXTURE_2D, ballTexture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-    int texWidth, texHeight, texnrChannels;
-    unsigned char *data = stbi_load("Textures/volleyball_thickened.jpg", &texWidth, &texHeight, &texnrChannels, 0);
-
-    if (data)
-    {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texWidth, texHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-    }
-    else
-    {
-        cout << "Failed to load texture" << endl;
-    }
-    stbi_image_free(data);
-
-
-    for (int i = 0; i < sphereRotationalDetail; ++i) //for each column/rotation/side of the sphere
-    {
-        //make triangle 1, so we can use it to build the others
-        //cout << "column start: " << i << endl;
-        //cout << "index: " << i*numberOfCoordinates/sphereRotationalDetail << endl;
-
-        //a
-        sphereVertices[i*numberOfCoordinates/sphereRotationalDetail] = cos(M_PI*2*i/sphereRotationalDetail)*sin(M_PI*0/(sphereHeightDetail+1)); //x
-        sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+1] = sin(M_PI*2*i/sphereRotationalDetail)*sin(M_PI*0/(sphereHeightDetail+1)); //y
-        sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+2] = cos(M_PI*0/(sphereHeightDetail+1)); //z
-        //cout << setprecision(2) << sphereVertices[i*numberOfCoordinates/sphereRotationalDetail] << " "
-        //    << sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+1] << " "
-        //    << sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+2] << " A " << endl;
-
-        //b
-        sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+3] = cos(M_PI*2*i/sphereRotationalDetail)*sin(M_PI*1/(sphereHeightDetail+1)); //x
-        sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+4] = sin(M_PI*2*i/sphereRotationalDetail)*sin(M_PI*1/(sphereHeightDetail+1)); //y
-        sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+5] = cos(M_PI*1/(sphereHeightDetail+1)); //z
-
-        //cout << "index: " << i*numberOfCoordinates/sphereRotationalDetail+3 << endl;
-        //cout << sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+3] << " "
-        //    << sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+4] << " "
-        //    << sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+5] << " B " << endl;
-
-        //c
-        sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+6] = cos(M_PI*2*(i+1)/sphereRotationalDetail)*sin(M_PI*1/(sphereHeightDetail+1)); //x
-        sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+7] = sin(M_PI*2*(i+1)/sphereRotationalDetail)*sin(M_PI*1/(sphereHeightDetail+1)); //y
-        sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+8] = cos(M_PI*1/(sphereHeightDetail+1)); //z
-
-        //cout << "index: " << i*numberOfCoordinates/sphereRotationalDetail+6 << endl;
-        //cout << sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+6] << " "
-        //    << sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+7] << " "
-        //    << sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+8] << " C " << endl << endl;
-
-        for (int j = 1; j < sphereHeightDetail*2; ++j) //for each triangle within the column, besides the first
-        {
-            sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9] = sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+(j-1)*9+3]; //x from previous triangle
-            sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+1] = sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+(j-1)*9+4]; //y from previous triangle
-            sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+2] = sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+(j-1)*9+5]; //z from previous triangle
-
-            //cout << "index: " << i*numberOfCoordinates/sphereRotationalDetail+j*9 << " taking from index: " << i*numberOfCoordinates/sphereRotationalDetail+(j-1)*9+3 << endl;
-            //cout << sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9] << " "
-            //<< sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+1] << " "
-            //<< sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+2] << " a " << endl;
-
-            sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+3] = sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+(j-1)*9+6]; //x from previous triangle
-            sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+4] = sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+(j-1)*9+7]; //y from previous triangle
-            sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+5] = sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+(j-1)*9+8]; //z from previous triangle
-            
-            //cout << "index: " << i*numberOfCoordinates/sphereRotationalDetail+j*9+3  << " taking from index: " << i*numberOfCoordinates/sphereRotationalDetail+(j-1)*9+6 << endl;
-            //cout << sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+3] << " "
-            //<< sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+4] << " "
-            //<< sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+5] << " b " << endl;
-
-            if (j % 2 == 0) //if the next triangle vertice to make is to finish a square, make sure it is generated with the right hand rule
-            {
-                //cout << "odd num" << endl;
-                sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+6] = cos(M_PI*2*(i+1)/sphereRotationalDetail)*sin(M_PI*(int((j+2)/2))/(sphereHeightDetail+1)); //new x
-                sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+7] = sin(M_PI*2*(i+1)/sphereRotationalDetail)*sin(M_PI*(int((j+2)/2))/(sphereHeightDetail+1)); //new y
-                sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+8] = cos(M_PI*(int((j+2)/2))/(sphereHeightDetail+1)); //new z
-            }
-            else 
-            {
-                sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+6] = cos(M_PI*2*i/sphereRotationalDetail)*sin(M_PI*(int((j+1)/2)+1)/(sphereHeightDetail+1)); //new x
-                sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+7] = sin(M_PI*2*i/sphereRotationalDetail)*sin(M_PI*(int((j+1)/2)+1)/(sphereHeightDetail+1)); //new y
-                sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+8] = cos(M_PI*(int((j+1)/2)+1)/(sphereHeightDetail+1)); //new z
-            }
-
-            //cout << "index: " << i*numberOfCoordinates/sphereRotationalDetail+j*9+6 << endl;
-            //cout << sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+6] << " "
-            //<< sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+7] << " "
-            //<< sphereVertices[i*numberOfCoordinates/sphereRotationalDetail+j*9+8] << " c " << endl << endl;
-        }
-
-        for (int j = 0; j < sphereHeightDetail*2; ++j)
-        {
-            for (int k = 0; k < 3; ++k)
-            {
-                int m = j+k;
-                int col = ((m == 0 || m % 2 == 1) ? i : i+1);
-                int lat = ((m == 0) ? 0 : (m+1)/2);
-
-                int index = (i*sphereHeightDetail*2*3 + j*3 + k)*2;
-                sphereTextureCoordinates[index] = (float)col/sphereRotationalDetail; // u
-                sphereTextureCoordinates[index+1] = (float)lat/(sphereHeightDetail+1); // v
-            }
-        }
-    }
 }
 
 void initColumnsAndRows()
